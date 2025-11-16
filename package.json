@@ -4,9 +4,9 @@
   "description": "Admin dashboard for Shop management",
   "private": true,
   "scripts": {
-    "dev": "next dev --port 3001",
+    "dev": "next dev",
     "build": "next build",
-    "start": "next start --port 3001",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
