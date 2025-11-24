@@ -226,7 +226,7 @@ export default function OrdersPage() {
     <AdminLayout>
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between px-6 py-4">
-          <h1 className="text-lg font-medium text-gray-900">Orders</h1>
+          <h1 className="text-lg font-medium text-gray-900">{t.orders.title}</h1>
         </div>
 
         {orders.length === 0 ? (
@@ -237,8 +237,8 @@ export default function OrdersPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                 </svg>
               </div>
-              <h3 className="text-sm font-medium text-gray-900 mb-1">No records</h3>
-              <p className="text-sm text-gray-500">Your orders will show up here.</p>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">{t.orders.noRecords}</h3>
+              <p className="text-sm text-gray-500">{t.orders.noRecordsDescription}</p>
             </div>
           </div>
         ) : (
@@ -258,7 +258,7 @@ export default function OrdersPage() {
                         id="filter-order-id"
                         name="filter-order-id"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder={t.orders.filterPlaceholder}
                         value={filters.id}
                         onChange={(e) => handleFilterChange('id', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -292,7 +292,7 @@ export default function OrdersPage() {
                         id="filter-order-customer"
                         name="filter-order-customer"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder={t.orders.filterPlaceholder}
                         value={filters.customer}
                         onChange={(e) => handleFilterChange('customer', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -309,7 +309,7 @@ export default function OrdersPage() {
                         id="filter-order-status"
                         name="filter-order-status"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder={t.orders.filterPlaceholder}
                         value={filters.status}
                         onChange={(e) => handleFilterChange('status', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -326,7 +326,7 @@ export default function OrdersPage() {
                         id="filter-order-payment-status"
                         name="filter-order-payment-status"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder={t.orders.filterPlaceholder}
                         value={filters.payment_status}
                         onChange={(e) => handleFilterChange('payment_status', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -343,7 +343,7 @@ export default function OrdersPage() {
                         id="filter-order-total"
                         name="filter-order-total"
                         type="text"
-                        placeholder=">520, <850, =30..."
+                        placeholder={t.orders.totalFilter}
                         value={filters.total}
                         onChange={(e) => handleFilterChange('total', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -361,16 +361,27 @@ export default function OrdersPage() {
                         <div className="text-sm text-gray-500">{formatDate(order.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{order.user?.email || 'Guest'}</div>
+                        <div className="text-sm text-gray-900">{order.user?.email || t.orders.guest}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 py-1 inline-flex text-xs font-medium rounded-md ${getStatusColor(order.status)}`}>
-                          {order.status}
+                          {order.status === 'pending' ? t.orders.pending :
+                           order.status === 'processing' ? t.orders.processing :
+                           order.status === 'shipped' ? t.orders.shipped :
+                           order.status === 'delivered' ? t.orders.delivered :
+                           order.status === 'cancelled' ? t.orders.cancelled :
+                           order.status === 'completed' ? t.orders.completed :
+                           order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="px-2 py-1 inline-flex text-xs font-medium rounded-md bg-green-50 text-green-700">
-                          {order.payment_status || 'paid'}
+                          {order.payment_status === 'paid' ? t.orders.paid :
+                           order.payment_status === 'pending' ? t.orders.pending :
+                           order.payment_status === 'unpaid' ? t.orders.unpaid :
+                           order.payment_status === 'failed' ? t.orders.failed :
+                           order.payment_status === 'refunded' ? t.orders.refunded :
+                           order.payment_status || t.orders.paid}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right">
