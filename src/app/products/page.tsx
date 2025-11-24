@@ -292,36 +292,6 @@ export default function ProductsPage() {
     return <ArrowDown className="w-4 h-4 text-blue-600" />
   }
 
-  const handleTranslateAll = async () => {
-    const token = localStorage.getItem('admin_token')
-    if (!token) return
-
-    if (!confirm('This will translate all products to all languages. Continue?')) {
-      return
-    }
-
-    try {
-      setLoading(true)
-      const response = await axios.post(
-        `${API_URL}/translations/translate/all?use_ai=false`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-      
-      alert(`Success! Created ${response.data.summary.total_translations_created} translations, Updated ${response.data.summary.total_translations_updated} translations`)
-      
-      // Reload products to see translated names
-      setProducts([])
-      setPage(1)
-      await checkAuthAndLoadProducts(true)
-    } catch (error) {
-      console.error('Translation error:', error)
-      alert('Error translating products. Check console for details.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   if (loading) {
     return <div className="flex items-center justify-center min-h-screen">{t.common.loading}</div>
   }
@@ -332,13 +302,6 @@ export default function ProductsPage() {
         <div className="mb-6 flex justify-between items-center gap-3">
           <h1 className="text-lg font-medium text-gray-900">{t.products.title}</h1>
           <div className="flex gap-2">
-            <button 
-              onClick={handleTranslateAll}
-              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium"
-              title="Translate all products to all languages"
-            >
-              🌐 Translate All
-            </button>
             <button 
               onClick={handleAddNew}
               className="btn-primary"
