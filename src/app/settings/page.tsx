@@ -18,6 +18,20 @@ interface Setting {
   updated_at: string
 }
 
+interface TranslationStatus {
+  running: boolean
+  started_at: string | null
+  current_item: string
+  total_items: number
+  completed_items: number
+  current_type: string
+  errors: number
+  estimated_completion: number | null
+  progress_percentage: number
+  items_remaining: number
+  estimated_time_remaining: number
+}
+
 export default function SettingsPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -31,10 +45,31 @@ export default function SettingsPage() {
   const [storeEmail, setStoreEmail] = useState('')
   const [storePhone, setStorePhone] = useState('')
 
+  // Translation status
+  const [translationStatus, setTranslationStatus] = useState<TranslationStatus | null>(null)
+  const [translating, setTranslating] = useState(false)
+  const [useAI, setUseAI] = useState(true)
+
   useEffect(() => {
     checkAuthAndLoadSettings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    // Poll translation status if translation is running
+    let interval: NodeJS.Timeout | null = null
+    
+    if (translating) {
+      interval = setInterval(() => {
+        checkTranslationStatus()
+      }, 2000) // Poll every 2 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [translating])
 
   const checkAuthAndLoadSettings = async () => {
     const token = localStorage.getItem('admin_token')
@@ -44,7 +79,7 @@ export default function SettingsPage() {
     }
 
     try {
-      const response = await axios.get(`${API_URL}/admin/settings`, {
+      const response = await axios.get(`${API_URL}/admin/settings/`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setSettings(response.data)
@@ -69,10 +104,17 @@ export default function SettingsPage() {
             break
         }
       })
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading settings:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/login')
+      
+      // Only redirect to login on authentication errors
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('admin_token')
+        router.push('/login')
+      } else {
+        // For other errors, just show empty settings (API might be down or endpoint issue)
+        alert('Error loading settings. Some features may not work properly.')
+      }
     } finally {
       setLoading(false)
     }
@@ -105,6 +147,64 @@ export default function SettingsPage() {
     } finally {
       setSaving(false)
     }
+  }
+
+  const checkTranslationStatus = async () => {
+    try {
+      const token = localStorage.getItem('admin_token')
+      const response = await axios.get(
+        `${API_URL}/admin/translations/translate/status`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      
+      const status = response.data as TranslationStatus
+      setTranslationStatus(status)
+      
+      // Stop polling if translation is complete
+      if (!status.running) {
+        setTranslating(false)
+      }
+    } catch (error) {
+      console.error('Error checking translation status:', error)
+    }
+  }
+
+  const startTranslation = async (testMode = false) => {
+    const itemLimit = testMode ? 5 : undefined
+    const confirmMessage = testMode 
+      ? 'Start test translation (5 items only)?'
+      : `Translate ALL products and categories to all languages using ${useAI ? 'AI' : 'simple'} translation?\n\nThis may take several hours for large catalogs. Continue?`
+    
+    if (!confirm(confirmMessage)) return
+
+    if (useAI && !openaiApiKey) {
+      alert('Please configure OpenAI API key first')
+      return
+    }
+
+    try {
+      setTranslating(true)
+      const token = localStorage.getItem('admin_token')
+      
+      await axios.post(
+        `${API_URL}/admin/translations/translate/all${itemLimit ? `?limit=${itemLimit}` : ''}`,
+        { use_ai: useAI },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      
+      // Start polling status immediately
+      checkTranslationStatus()
+    } catch (error) {
+      console.error('Error starting translation:', error)
+      alert('Error starting translation')
+      setTranslating(false)
+    }
+  }
+
+  const formatTime = (seconds: number): string => {
+    if (seconds < 60) return `${Math.round(seconds)}s`
+    if (seconds < 3600) return `${Math.round(seconds / 60)}m`
+    return `${Math.round(seconds / 3600)}h ${Math.round((seconds % 3600) / 60)}m`
   }
 
   if (loading) {
@@ -188,6 +288,143 @@ export default function SettingsPage() {
                       <li>• <strong>GPT-4 Turbo:</strong> High-quality, good for detailed content (~$10/1M input tokens)</li>
                     </ul>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Translations Management */}
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
+              Translations
+            </h2>
+            <p className="text-sm text-ui-fg-muted mb-4">
+              Automatically translate all products and categories to all available languages
+            </p>
+
+            {/* Translation Options */}
+            <div className="space-y-4 mb-6">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="useAI"
+                  checked={useAI}
+                  onChange={(e) => setUseAI(e.target.checked)}
+                  disabled={translating}
+                  className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
+                />
+                <label htmlFor="useAI" className="ml-2 text-sm text-ui-fg-base">
+                  Use AI Translation (OpenAI) - Better quality but slower and requires API key
+                </label>
+              </div>
+              {!useAI && (
+                <div className="bg-ui-bg-subtle p-3 rounded-lg text-xs text-ui-fg-subtle">
+                  Simple translation uses basic word replacement. Results may vary in quality.
+                </div>
+              )}
+            </div>
+
+            {/* Translation Progress */}
+            {translationStatus && translationStatus.running && (
+              <div className="bg-ui-bg-subtle border border-ui-border-base rounded-lg p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-ui-fg-interactive mr-2"></div>
+                    <span className="text-sm font-medium text-ui-fg-base">Translation in Progress</span>
+                  </div>
+                  <span className="text-sm font-medium text-ui-fg-interactive">
+                    {translationStatus.progress_percentage.toFixed(1)}%
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="w-full bg-ui-bg-component rounded-full h-2 mb-3">
+                  <div 
+                    className="bg-ui-fg-interactive h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${translationStatus.progress_percentage}%` }}
+                  />
+                </div>
+
+                {/* Details */}
+                <div className="space-y-1 text-xs text-ui-fg-subtle">
+                  <div className="flex justify-between">
+                    <span>Current:</span>
+                    <span className="text-ui-fg-base font-medium truncate ml-2 max-w-xs">
+                      {translationStatus.current_item}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Progress:</span>
+                    <span className="text-ui-fg-base">
+                      {translationStatus.completed_items} / {translationStatus.total_items} items
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Remaining:</span>
+                    <span className="text-ui-fg-base">
+                      {translationStatus.items_remaining} items (~{formatTime(translationStatus.estimated_time_remaining)})
+                    </span>
+                  </div>
+                  {translationStatus.errors > 0 && (
+                    <div className="flex justify-between text-red-600">
+                      <span>Errors:</span>
+                      <span className="font-medium">{translationStatus.errors}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Completion Message */}
+            {translationStatus && !translationStatus.running && translationStatus.total_items > 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                <div className="flex items-start">
+                  <svg className="w-5 h-5 text-green-600 mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  <div className="text-sm">
+                    <p className="font-medium text-green-900">Translation Complete!</p>
+                    <p className="text-green-700 mt-1">
+                      Successfully translated {translationStatus.completed_items} items
+                      {translationStatus.errors > 0 && ` (${translationStatus.errors} errors)`}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => startTranslation(true)}
+                disabled={translating || saving}
+                className="btn-secondary"
+              >
+                Test Translation (5 items)
+              </button>
+              <button
+                onClick={() => startTranslation(false)}
+                disabled={translating || saving}
+                className="btn-primary"
+              >
+                {translating ? 'Translating...' : 'Translate All Content'}
+              </button>
+            </div>
+
+            <div className="mt-4 bg-ui-bg-subtle p-4 rounded-lg">
+              <div className="flex items-start">
+                <svg className="w-5 h-5 text-ui-fg-interactive mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="text-sm text-ui-fg-subtle">
+                  <strong>Translation Info:</strong>
+                  <ul className="mt-2 space-y-1 text-xs">
+                    <li>• <strong>Test Mode:</strong> Translates only 5 items for testing (~10-30 seconds)</li>
+                    <li>• <strong>Full Translation:</strong> Translates all products and categories (may take hours for large catalogs)</li>
+                    <li>• <strong>AI Translation:</strong> Uses OpenAI for high-quality, context-aware translations</li>
+                    <li>• <strong>Background Process:</strong> Runs in background, your admin panel remains fully responsive</li>
+                    <li>• <strong>Real-time Progress:</strong> This page automatically updates to show translation progress</li>
+                  </ul>
                 </div>
               </div>
             </div>
