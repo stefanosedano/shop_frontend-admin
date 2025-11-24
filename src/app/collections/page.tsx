@@ -70,10 +70,10 @@ export default function CollectionsPage() {
       const token = localStorage.getItem('admin_token')
       // Mock delete for now
       setCollections(collections.filter(c => c.id !== collectionId))
-      alert('Collection deleted successfully')
+      alert(t.collections.deletedSuccess)
     } catch (error) {
       console.error('Error deleting collection:', error)
-      alert('Failed to delete collection')
+      alert(t.collections.deletedError)
     }
   }
 
@@ -81,7 +81,7 @@ export default function CollectionsPage() {
     e.preventDefault()
 
     if (!formData.name.trim()) {
-      alert('Collection name is required')
+      alert(t.collections.nameRequired)
       return
     }
 
@@ -95,7 +95,7 @@ export default function CollectionsPage() {
             ? { ...c, ...formData }
             : c
         ))
-        alert('Collection updated successfully')
+        alert(t.collections.updatedSuccess)
       } else {
         // Mock create
         const newCollection = {
@@ -104,14 +104,14 @@ export default function CollectionsPage() {
           products_count: 0
         }
         setCollections([...collections, newCollection])
-        alert('Collection created successfully')
+        alert(t.collections.createdSuccess)
       }
 
       setShowModal(false)
       setFormData({ name: '', description: '', status: 'active' })
     } catch (error) {
       console.error('Error saving collection:', error)
-      alert('Failed to save collection')
+      alert(t.collections.savedError)
     }
   }
 
@@ -150,9 +150,9 @@ export default function CollectionsPage() {
                 {collections.map((collection) => (
                   <tr key={collection.id}>
                     <td className="font-medium">{collection.name}</td>
-                    <td className="text-ui-fg-muted">{collection.products_count} products</td>
+                    <td className="text-ui-fg-muted">{collection.products_count} {t.collections.productsLabel}</td>
                     <td>
-                      <span className="badge badge-success">{collection.status}</span>
+                      <span className="badge badge-success">{collection.status === 'active' ? t.common.active : t.common.inactive}</span>
                     </td>
                     <td>
                       <div className="flex gap-2">
