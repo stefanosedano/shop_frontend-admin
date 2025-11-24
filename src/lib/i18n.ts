@@ -24,7 +24,24 @@ export interface Translations {
   promotions: { title: string; subtitle: string; totalPromotions: string; active: string; expired: string; totalUses: string; createPromotion: string }
   regions: { title: string; subtitle: string; name: string; countries: string; currency: string; addRegion: string }
   salesChannels: { title: string; subtitle: string; name: string; description: string; products: string; addChannel: string }
-  settings: { title: string; subtitle: string; storeDetails: string; storeName: string; storeEmail: string; storePhone: string; saveChanges: string }
+  settings: { 
+    title: string; subtitle: string; storeDetails: string; storeName: string; storeEmail: string; storePhone: string; saveChanges: string;
+    openaiConfig: string; openaiConfigDesc: string; apiKey: string; apiKeyPlaceholder: string; apiKeyDesc: string;
+    gptModel: string; modelDesc: string; modelComparison: string;
+    cloudStorage: string; cloudStorageDesc: string; enableS3: string;
+    s3Endpoint: string; s3EndpointPlaceholder: string; s3EndpointDesc: string;
+    bucketName: string; bucketPlaceholder: string;
+    accessKeyId: string; accessKeyPlaceholder: string;
+    secretAccessKey: string; secretAccessKeyPlaceholder: string;
+    region: string; publicUrl: string; publicUrlPlaceholder: string; publicUrlDesc: string;
+    providerQuickSetup: string;
+    translations: string; translationsDesc: string;
+    useAI: string; useAIDesc: string; skipExisting: string; skipExistingDesc: string;
+    testTranslation: string; translateAll: string; translating: string;
+    translationProgress: string; current: string; progress: string; remaining: string; errors: string;
+    translationComplete: string; translationCompleteDesc: string;
+    translationInfo: string; testMode: string; fullTranslation: string; aiTranslation: string; backgroundProcess: string; realtimeProgress: string;
+  }
   shipping: { title: string; subtitle: string; name: string; region: string; price: string; addShipping: string }
   taxes: { title: string; subtitle: string; name: string; region: string; rate: string; addTax: string }
   login: { title: string; subtitle: string; email: string; password: string; loginButton: string; forgotPassword: string }
@@ -52,7 +69,36 @@ const translations: Record<Language, Translations> = {
     promotions: { title: 'Promotions', subtitle: 'Manage discounts and promotions', totalPromotions: 'Total Promotions', active: 'Active', expired: 'Expired', totalUses: 'Total Uses', createPromotion: 'Create Promotion' },
     regions: { title: 'Regions', subtitle: 'Manage geographic regions and currencies', name: 'Name', countries: 'Countries', currency: 'Currency', addRegion: 'Add Region' },
     salesChannels: { title: 'Sales Channels', subtitle: 'Manage where your products are sold', name: 'Name', description: 'Description', products: 'Products', addChannel: 'Add Channel' },
-    settings: { title: 'Settings', subtitle: 'Manage your store settings and preferences', storeDetails: 'Store Details', storeName: 'Store Name', storeEmail: 'Store Email', storePhone: 'Store Phone', saveChanges: 'Save Changes' },
+    settings: { 
+      title: 'Settings', subtitle: 'Manage your store settings and AI configuration', 
+      storeDetails: 'Store Details', storeName: 'Store Name', storeEmail: 'Store Email', storePhone: 'Store Phone', saveChanges: 'Save Changes',
+      openaiConfig: 'OpenAI Configuration', openaiConfigDesc: 'Configure OpenAI API for automatic product and category translations',
+      apiKey: 'API Key', apiKeyPlaceholder: 'sk-...', apiKeyDesc: 'Your OpenAI API key (keep this secret)',
+      gptModel: 'GPT Model', modelDesc: 'Model used for AI translations - GPT-4 models provide better translations but cost more', modelComparison: 'Model Comparison:',
+      cloudStorage: 'Cloud Storage (S3/R2/Spaces)', cloudStorageDesc: 'Configure cloud storage for product images (AWS S3, Cloudflare R2, DigitalOcean Spaces)',
+      enableS3: 'Enable S3-Compatible Storage',
+      s3Endpoint: 'S3 Endpoint URL', s3EndpointPlaceholder: 'https://s3.us-east-1.amazonaws.com or https://xxx.r2.cloudflarestorage.com', 
+      s3EndpointDesc: 'Leave empty for AWS S3, or specify custom endpoint for R2/Spaces',
+      bucketName: 'Bucket Name', bucketPlaceholder: 'my-shop-images',
+      accessKeyId: 'Access Key ID', accessKeyPlaceholder: 'AKIAIOSFODNN7EXAMPLE',
+      secretAccessKey: 'Secret Access Key', secretAccessKeyPlaceholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      region: 'Region', publicUrl: 'Public URL / CDN URL', publicUrlPlaceholder: 'https://cdn.myshop.com or https://pub-xxx.r2.dev',
+      publicUrlDesc: 'The public URL where images will be accessible (CDN domain or R2 public bucket URL)',
+      providerQuickSetup: 'Provider Quick Setup:',
+      translations: 'Translations', translationsDesc: 'Automatically translate all products and categories to all available languages',
+      useAI: 'Use AI Translation (OpenAI) - Better quality but slower and requires API key',
+      useAIDesc: 'Simple translation uses basic word replacement. Results may vary in quality.',
+      skipExisting: 'Skip already translated items - Only translate new/untranslated content',
+      skipExistingDesc: '⚠️ Warning: Re-translating all items will overwrite existing translations and use more API credits.',
+      testTranslation: 'Test Translation (5 items)', translateAll: 'Translate All Content', translating: 'Translating...',
+      translationProgress: 'Translation in Progress', current: 'Current:', progress: 'Progress:', remaining: 'Remaining:', errors: 'Errors:',
+      translationComplete: 'Translation Complete!', translationCompleteDesc: 'Successfully translated {0} items',
+      translationInfo: 'Translation Info:', testMode: 'Test Mode: Translates only 5 items for testing (~10-30 seconds)',
+      fullTranslation: 'Full Translation: Translates all products and categories (may take hours for large catalogs)',
+      aiTranslation: 'AI Translation: Uses OpenAI for high-quality, context-aware translations',
+      backgroundProcess: 'Background Process: Runs in background, your admin panel remains fully responsive',
+      realtimeProgress: 'Real-time Progress: This page automatically updates to show translation progress'
+    },
     shipping: { title: 'Shipping', subtitle: 'Manage shipping options and rates', name: 'Name', region: 'Region', price: 'Price', addShipping: 'Add Shipping Option' },
     taxes: { title: 'Taxes', subtitle: 'Manage tax rates and rules', name: 'Name', region: 'Region', rate: 'Rate', addTax: 'Add Tax' },
     login: { title: 'Admin Login', subtitle: 'Shop Administration Dashboard', email: 'Email', password: 'Password', loginButton: 'Login', forgotPassword: 'Forgot Password?' }
@@ -78,7 +124,36 @@ const translations: Record<Language, Translations> = {
     promotions: { title: 'Promociones', subtitle: 'Gestiona descuentos y promociones', totalPromotions: 'Promociones Totales', active: 'Activo', expired: 'Expirado', totalUses: 'Usos Totales', createPromotion: 'Crear Promoción' },
     regions: { title: 'Regiones', subtitle: 'Gestiona regiones geográficas y monedas', name: 'Nombre', countries: 'Países', currency: 'Moneda', addRegion: 'Añadir Región' },
     salesChannels: { title: 'Canales de Venta', subtitle: 'Gestiona dónde se venden tus productos', name: 'Nombre', description: 'Descripción', products: 'Productos', addChannel: 'Añadir Canal' },
-    settings: { title: 'Configuración', subtitle: 'Gestiona tu tienda y preferencias', storeDetails: 'Detalles de la Tienda', storeName: 'Nombre de la Tienda', storeEmail: 'Email de la Tienda', storePhone: 'Teléfono de la Tienda', saveChanges: 'Guardar Cambios' },
+    settings: { 
+      title: 'Configuración', subtitle: 'Gestiona la configuración de tu tienda y la IA', 
+      storeDetails: 'Detalles de la Tienda', storeName: 'Nombre de la Tienda', storeEmail: 'Email de la Tienda', storePhone: 'Teléfono de la Tienda', saveChanges: 'Guardar Cambios',
+      openaiConfig: 'Configuración OpenAI', openaiConfigDesc: 'Configurar API de OpenAI para traducciones automáticas de productos y categorías',
+      apiKey: 'Clave API', apiKeyPlaceholder: 'sk-...', apiKeyDesc: 'Tu clave API de OpenAI (manténla en secreto)',
+      gptModel: 'Modelo GPT', modelDesc: 'Modelo usado para traducciones IA - Los modelos GPT-4 ofrecen mejores traducciones pero cuestan más', modelComparison: 'Comparación de Modelos:',
+      cloudStorage: 'Almacenamiento en la Nube (S3/R2/Spaces)', cloudStorageDesc: 'Configurar almacenamiento en la nube para imágenes de productos (AWS S3, Cloudflare R2, DigitalOcean Spaces)',
+      enableS3: 'Habilitar Almacenamiento Compatible con S3',
+      s3Endpoint: 'URL del Endpoint S3', s3EndpointPlaceholder: 'https://s3.us-east-1.amazonaws.com o https://xxx.r2.cloudflarestorage.com', 
+      s3EndpointDesc: 'Dejar vacío para AWS S3, o especificar endpoint personalizado para R2/Spaces',
+      bucketName: 'Nombre del Bucket', bucketPlaceholder: 'imagenes-mi-tienda',
+      accessKeyId: 'ID de Clave de Acceso', accessKeyPlaceholder: 'AKIAIOSFODNN7EXAMPLE',
+      secretAccessKey: 'Clave de Acceso Secreta', secretAccessKeyPlaceholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      region: 'Región', publicUrl: 'URL Pública / URL CDN', publicUrlPlaceholder: 'https://cdn.mitienda.com o https://pub-xxx.r2.dev',
+      publicUrlDesc: 'La URL pública donde las imágenes serán accesibles (dominio CDN o URL del bucket R2 público)',
+      providerQuickSetup: 'Configuración Rápida del Proveedor:',
+      translations: 'Traducciones', translationsDesc: 'Traducir automáticamente todos los productos y categorías a todos los idiomas disponibles',
+      useAI: 'Usar Traducción IA (OpenAI) - Mejor calidad pero más lento y requiere clave API',
+      useAIDesc: 'La traducción simple usa reemplazo básico de palabras. Los resultados pueden variar en calidad.',
+      skipExisting: 'Omitir elementos ya traducidos - Solo traducir contenido nuevo/no traducido',
+      skipExistingDesc: '⚠️ Advertencia: Volver a traducir todos los elementos sobrescribirá las traducciones existentes y usará más créditos de API.',
+      testTranslation: 'Traducción de Prueba (5 elementos)', translateAll: 'Traducir Todo el Contenido', translating: 'Traduciendo...',
+      translationProgress: 'Traducción en Progreso', current: 'Actual:', progress: 'Progreso:', remaining: 'Restante:', errors: 'Errores:',
+      translationComplete: '¡Traducción Completa!', translationCompleteDesc: 'Traducidos exitosamente {0} elementos',
+      translationInfo: 'Info de Traducción:', testMode: 'Modo de Prueba: Traduce solo 5 elementos para pruebas (~10-30 segundos)',
+      fullTranslation: 'Traducción Completa: Traduce todos los productos y categorías (puede llevar horas para catálogos grandes)',
+      aiTranslation: 'Traducción IA: Usa OpenAI para traducciones de alta calidad y conscientes del contexto',
+      backgroundProcess: 'Proceso en Segundo Plano: Se ejecuta en segundo plano, tu panel de administración permanece completamente responsivo',
+      realtimeProgress: 'Progreso en Tiempo Real: Esta página se actualiza automáticamente para mostrar el progreso de la traducción'
+    },
     shipping: { title: 'Envío', subtitle: 'Gestiona opciones y tarifas de envío', name: 'Nombre', region: 'Región', price: 'Precio', addShipping: 'Añadir Opción de Envío' },
     taxes: { title: 'Impuestos', subtitle: 'Gestiona tasas y reglas de impuestos', name: 'Nombre', region: 'Región', rate: 'Tasa', addTax: 'Añadir Impuesto' },
     login: { title: 'Acceso de Administrador', subtitle: 'Panel de Administración de la Tienda', email: 'Email', password: 'Contraseña', loginButton: 'Entrar', forgotPassword: '¿Olvidaste tu Contraseña?' }
@@ -104,7 +179,36 @@ const translations: Record<Language, Translations> = {
     promotions: { title: 'Promozioni', subtitle: 'Gestisci sconti e promozioni', totalPromotions: 'Promozioni Totali', active: 'Attivo', expired: 'Scaduto', totalUses: 'Utilizzi Totali', createPromotion: 'Crea Promozione' },
     regions: { title: 'Regioni', subtitle: 'Gestisci regioni geografiche e valute', name: 'Nome', countries: 'Paesi', currency: 'Valuta', addRegion: 'Aggiungi Regione' },
     salesChannels: { title: 'Canali di Vendita', subtitle: 'Gestisci dove vengono venduti i tuoi prodotti', name: 'Nome', description: 'Descrizione', products: 'Prodotti', addChannel: 'Aggiungi Canale' },
-    settings: { title: 'Impostazioni', subtitle: 'Gestisci le impostazioni e le preferenze del negozio', storeDetails: 'Dettagli del Negozio', storeName: 'Nome del Negozio', storeEmail: 'Email del Negozio', storePhone: 'Telefono del Negozio', saveChanges: 'Salva Modifiche' },
+    settings: { 
+      title: 'Impostazioni', subtitle: 'Gestisci le impostazioni del negozio e la configurazione IA', 
+      storeDetails: 'Dettagli del Negozio', storeName: 'Nome del Negozio', storeEmail: 'Email del Negozio', storePhone: 'Telefono del Negozio', saveChanges: 'Salva Modifiche',
+      openaiConfig: 'Configurazione OpenAI', openaiConfigDesc: 'Configura API OpenAI per traduzione automatica di prodotti e categorie',
+      apiKey: 'Chiave API', apiKeyPlaceholder: 'sk-...', apiKeyDesc: 'La tua chiave API OpenAI (mantienila segreta)',
+      gptModel: 'Modello GPT', modelDesc: 'Modello usato per le traduzioni IA - I modelli GPT-4 offrono traduzioni migliori ma costano di più', modelComparison: 'Confronto Modelli:',
+      cloudStorage: 'Archiviazione Cloud (S3/R2/Spaces)', cloudStorageDesc: 'Configura archiviazione cloud per le immagini dei prodotti (AWS S3, Cloudflare R2, DigitalOcean Spaces)',
+      enableS3: 'Abilita Archiviazione Compatibile S3',
+      s3Endpoint: 'URL Endpoint S3', s3EndpointPlaceholder: 'https://s3.us-east-1.amazonaws.com oppure https://xxx.r2.cloudflarestorage.com', 
+      s3EndpointDesc: 'Lascia vuoto per AWS S3, oppure specifica endpoint personalizzato per R2/Spaces',
+      bucketName: 'Nome Bucket', bucketPlaceholder: 'immagini-mio-negozio',
+      accessKeyId: 'ID Chiave di Accesso', accessKeyPlaceholder: 'AKIAIOSFODNN7EXAMPLE',
+      secretAccessKey: 'Chiave di Accesso Segreta', secretAccessKeyPlaceholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      region: 'Regione', publicUrl: 'URL Pubblica / URL CDN', publicUrlPlaceholder: 'https://cdn.mionegozio.com oppure https://pub-xxx.r2.dev',
+      publicUrlDesc: "L'URL pubblica dove le immagini saranno accessibili (dominio CDN o URL bucket R2 pubblico)",
+      providerQuickSetup: 'Configurazione Rapida Provider:',
+      translations: 'Traduzioni', translationsDesc: 'Traduci automaticamente tutti i prodotti e le categorie in tutte le lingue disponibili',
+      useAI: 'Usa Traduzione IA (OpenAI) - Migliore qualità ma più lento e richiede chiave API',
+      useAIDesc: 'La traduzione semplice usa sostituzione base delle parole. I risultati possono variare in qualità.',
+      skipExisting: 'Salta elementi già tradotti - Traduci solo contenuti nuovi/non tradotti',
+      skipExistingDesc: '⚠️ Attenzione: Ri-tradurre tutti gli elementi sovrascriverà le traduzioni esistenti e userà più crediti API.',
+      testTranslation: 'Traduzione di Prova (5 elementi)', translateAll: 'Traduci Tutto il Contenuto', translating: 'Traducendo...',
+      translationProgress: 'Traduzione in Corso', current: 'Attuale:', progress: 'Progresso:', remaining: 'Rimanente:', errors: 'Errori:',
+      translationComplete: 'Traduzione Completata!', translationCompleteDesc: 'Tradotti con successo {0} elementi',
+      translationInfo: 'Info Traduzione:', testMode: 'Modalità di Prova: Traduce solo 5 elementi per test (~10-30 secondi)',
+      fullTranslation: 'Traduzione Completa: Traduce tutti i prodotti e le categorie (può richiedere ore per cataloghi grandi)',
+      aiTranslation: 'Traduzione IA: Usa OpenAI per traduzioni di alta qualità e contestuali',
+      backgroundProcess: 'Processo in Background: Esegue in background, il tuo pannello admin rimane completamente reattivo',
+      realtimeProgress: 'Progresso in Tempo Reale: Questa pagina si aggiorna automaticamente per mostrare il progresso della traduzione'
+    },
     shipping: { title: 'Spedizione', subtitle: 'Gestisci opzioni e tariffe di spedizione', name: 'Nome', region: 'Regione', price: 'Prezzo', addShipping: 'Aggiungi Opzione di Spedizione' },
     taxes: { title: 'Tasse', subtitle: 'Gestisci aliquote e regole fiscali', name: 'Nome', region: 'Regione', rate: 'Aliquota', addTax: 'Aggiungi Tassa' },
     login: { title: 'Accesso Amministratore', subtitle: 'Pannello di Amministrazione del Negozio', email: 'Email', password: 'Password', loginButton: 'Accedi', forgotPassword: 'Password Dimenticata?' }
@@ -130,7 +234,36 @@ const translations: Record<Language, Translations> = {
     promotions: { title: 'Promotions', subtitle: 'Gérez les remises et les promotions', totalPromotions: 'Promotions Totales', active: 'Actif', expired: 'Expiré', totalUses: 'Utilisations Totales', createPromotion: 'Créer une Promotion' },
     regions: { title: 'Régions', subtitle: 'Gérez les régions géographiques et les devises', name: 'Nom', countries: 'Pays', currency: 'Devise', addRegion: 'Ajouter une Région' },
     salesChannels: { title: 'Canaux de Vente', subtitle: 'Gérez où vos produits sont vendus', name: 'Nom', description: 'Description', products: 'Produits', addChannel: 'Ajouter un Canal' },
-    settings: { title: 'Paramètres', subtitle: 'Gérez les paramètres et les préférences de votre magasin', storeDetails: 'Détails du Magasin', storeName: 'Nom du Magasin', storeEmail: 'Email du Magasin', storePhone: 'Téléphone du Magasin', saveChanges: 'Enregistrer les Modifications' },
+    settings: { 
+      title: 'Paramètres', subtitle: 'Gérez les paramètres de votre magasin et la configuration IA', 
+      storeDetails: 'Détails du Magasin', storeName: 'Nom du Magasin', storeEmail: 'Email du Magasin', storePhone: 'Téléphone du Magasin', saveChanges: 'Enregistrer les Modifications',
+      openaiConfig: 'Configuration OpenAI', openaiConfigDesc: 'Configurer l\'API OpenAI pour la traduction automatique des produits et catégories',
+      apiKey: 'Clé API', apiKeyPlaceholder: 'sk-...', apiKeyDesc: 'Votre clé API OpenAI (gardez-la secrète)',
+      gptModel: 'Modèle GPT', modelDesc: 'Modèle utilisé pour les traductions IA - Les modèles GPT-4 offrent de meilleures traductions mais coûtent plus cher', modelComparison: 'Comparaison des Modèles:',
+      cloudStorage: 'Stockage Cloud (S3/R2/Spaces)', cloudStorageDesc: 'Configurer le stockage cloud pour les images de produits (AWS S3, Cloudflare R2, DigitalOcean Spaces)',
+      enableS3: 'Activer le Stockage Compatible S3',
+      s3Endpoint: 'URL du Point de Terminaison S3', s3EndpointPlaceholder: 'https://s3.us-east-1.amazonaws.com ou https://xxx.r2.cloudflarestorage.com', 
+      s3EndpointDesc: 'Laisser vide pour AWS S3, ou spécifier un point de terminaison personnalisé pour R2/Spaces',
+      bucketName: 'Nom du Bucket', bucketPlaceholder: 'images-mon-magasin',
+      accessKeyId: 'ID de Clé d\'Accès', accessKeyPlaceholder: 'AKIAIOSFODNN7EXAMPLE',
+      secretAccessKey: 'Clé d\'Accès Secrète', secretAccessKeyPlaceholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      region: 'Région', publicUrl: 'URL Publique / URL CDN', publicUrlPlaceholder: 'https://cdn.monmagasin.com ou https://pub-xxx.r2.dev',
+      publicUrlDesc: 'L\'URL publique où les images seront accessibles (domaine CDN ou URL de bucket R2 public)',
+      providerQuickSetup: 'Configuration Rapide du Fournisseur:',
+      translations: 'Traductions', translationsDesc: 'Traduire automatiquement tous les produits et catégories dans toutes les langues disponibles',
+      useAI: 'Utiliser la Traduction IA (OpenAI) - Meilleure qualité mais plus lent et nécessite une clé API',
+      useAIDesc: 'La traduction simple utilise un remplacement basique des mots. Les résultats peuvent varier en qualité.',
+      skipExisting: 'Ignorer les éléments déjà traduits - Traduire uniquement le contenu nouveau/non traduit',
+      skipExistingDesc: '⚠️ Attention: Re-traduire tous les éléments écrasera les traductions existantes et utilisera plus de crédits API.',
+      testTranslation: 'Traduction de Test (5 éléments)', translateAll: 'Traduire Tout le Contenu', translating: 'Traduction en cours...',
+      translationProgress: 'Traduction en Cours', current: 'Actuel:', progress: 'Progrès:', remaining: 'Restant:', errors: 'Erreurs:',
+      translationComplete: 'Traduction Terminée!', translationCompleteDesc: '{0} éléments traduits avec succès',
+      translationInfo: 'Info Traduction:', testMode: 'Mode de Test: Traduit uniquement 5 éléments pour tester (~10-30 secondes)',
+      fullTranslation: 'Traduction Complète: Traduit tous les produits et catégories (peut prendre des heures pour les grands catalogues)',
+      aiTranslation: 'Traduction IA: Utilise OpenAI pour des traductions de haute qualité et contextuelles',
+      backgroundProcess: 'Processus en Arrière-plan: S\'exécute en arrière-plan, votre panneau d\'administration reste entièrement réactif',
+      realtimeProgress: 'Progrès en Temps Réel: Cette page se met à jour automatiquement pour afficher la progression de la traduction'
+    },
     shipping: { title: 'Expédition', subtitle: 'Gérez les options et les tarifs d\'expédition', name: 'Nom', region: 'Région', price: 'Prix', addShipping: 'Ajouter une Option d\'Expédition' },
     taxes: { title: 'Taxes', subtitle: 'Gérez les taux et les règles fiscales', name: 'Nom', region: 'Région', rate: 'Taux', addTax: 'Ajouter une Taxe' },
     login: { title: 'Accès Administrateur', subtitle: 'Panneau d\'Administration du Magasin', email: 'Email', password: 'Mot de Passe', loginButton: 'Connexion', forgotPassword: 'Mot de Passe Oublié?' }
@@ -156,7 +289,36 @@ const translations: Record<Language, Translations> = {
     promotions: { title: 'Aktionen', subtitle: 'Verwalten Sie Rabatte und Aktionen', totalPromotions: 'Gesamtaktionen', active: 'Aktiv', expired: 'Abgelaufen', totalUses: 'Gesamtnutzungen', createPromotion: 'Aktion erstellen' },
     regions: { title: 'Regionen', subtitle: 'Verwalten Sie geografische Regionen und Währungen', name: 'Name', countries: 'Länder', currency: 'Währung', addRegion: 'Region hinzufügen' },
     salesChannels: { title: 'Vertriebskanäle', subtitle: 'Verwalten Sie, wo Ihre Produkte verkauft werden', name: 'Name', description: 'Beschreibung', products: 'Produkte', addChannel: 'Kanal hinzufügen' },
-    settings: { title: 'Einstellungen', subtitle: 'Verwalten Sie die Laden- und Präferenzeinstellungen', storeDetails: 'Laden-Details', storeName: 'Ladenname', storeEmail: 'Laden-E-Mail', storePhone: 'Laden-Telefon', saveChanges: 'Änderungen speichern' },
+    settings: { 
+      title: 'Einstellungen', subtitle: 'Verwalten Sie die Ladeneinstellungen und KI-Konfiguration', 
+      storeDetails: 'Laden-Details', storeName: 'Ladenname', storeEmail: 'Laden-E-Mail', storePhone: 'Laden-Telefon', saveChanges: 'Änderungen Speichern',
+      openaiConfig: 'OpenAI-Konfiguration', openaiConfigDesc: 'OpenAI-API für automatische Übersetzung von Produkten und Kategorien konfigurieren',
+      apiKey: 'API-Schlüssel', apiKeyPlaceholder: 'sk-...', apiKeyDesc: 'Ihr OpenAI-API-Schlüssel (geheim halten)',
+      gptModel: 'GPT-Modell', modelDesc: 'Modell für KI-Übersetzungen - GPT-4-Modelle bieten bessere Übersetzungen, kosten aber mehr', modelComparison: 'Modellvergleich:',
+      cloudStorage: 'Cloud-Speicher (S3/R2/Spaces)', cloudStorageDesc: 'Cloud-Speicher für Produktbilder konfigurieren (AWS S3, Cloudflare R2, DigitalOcean Spaces)',
+      enableS3: 'S3-Kompatiblen Speicher Aktivieren',
+      s3Endpoint: 'S3-Endpunkt-URL', s3EndpointPlaceholder: 'https://s3.us-east-1.amazonaws.com oder https://xxx.r2.cloudflarestorage.com', 
+      s3EndpointDesc: 'Leer lassen für AWS S3, oder benutzerdefinierten Endpunkt für R2/Spaces angeben',
+      bucketName: 'Bucket-Name', bucketPlaceholder: 'bilder-mein-laden',
+      accessKeyId: 'Zugriffschlüssel-ID', accessKeyPlaceholder: 'AKIAIOSFODNN7EXAMPLE',
+      secretAccessKey: 'Geheimer Zugriffschlüssel', secretAccessKeyPlaceholder: 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+      region: 'Region', publicUrl: 'Öffentliche URL / CDN-URL', publicUrlPlaceholder: 'https://cdn.meinladen.com oder https://pub-xxx.r2.dev',
+      publicUrlDesc: 'Die öffentliche URL, unter der die Bilder zugänglich sind (CDN-Domain oder öffentliche R2-Bucket-URL)',
+      providerQuickSetup: 'Schnelleinrichtung Anbieter:',
+      translations: 'Übersetzungen', translationsDesc: 'Alle Produkte und Kategorien automatisch in alle verfügbaren Sprachen übersetzen',
+      useAI: 'KI-Übersetzung Verwenden (OpenAI) - Bessere Qualität, aber langsamer und erfordert API-Schlüssel',
+      useAIDesc: 'Einfache Übersetzung verwendet grundlegenden Wortersatz. Die Ergebnisse können in der Qualität variieren.',
+      skipExisting: 'Bereits übersetzte Elemente überspringen - Nur neue/nicht übersetzte Inhalte übersetzen',
+      skipExistingDesc: '⚠️ Warnung: Alle Elemente erneut zu übersetzen überschreibt vorhandene Übersetzungen und verbraucht mehr API-Guthaben.',
+      testTranslation: 'Test-Übersetzung (5 Elemente)', translateAll: 'Gesamten Inhalt Übersetzen', translating: 'Übersetze...',
+      translationProgress: 'Übersetzung läuft', current: 'Aktuell:', progress: 'Fortschritt:', remaining: 'Verbleibend:', errors: 'Fehler:',
+      translationComplete: 'Übersetzung Abgeschlossen!', translationCompleteDesc: '{0} Elemente erfolgreich übersetzt',
+      translationInfo: 'Übersetzungs-Info:', testMode: 'Testmodus: Übersetzt nur 5 Elemente zum Testen (~10-30 Sekunden)',
+      fullTranslation: 'Vollständige Übersetzung: Übersetzt alle Produkte und Kategorien (kann bei großen Katalogen Stunden dauern)',
+      aiTranslation: 'KI-Übersetzung: Verwendet OpenAI für hochwertige und kontextbezogene Übersetzungen',
+      backgroundProcess: 'Hintergrundprozess: Läuft im Hintergrund, Ihr Admin-Panel bleibt voll reaktionsfähig',
+      realtimeProgress: 'Echtzeit-Fortschritt: Diese Seite aktualisiert sich automatisch, um den Übersetzungsfortschritt anzuzeigen'
+    },
     shipping: { title: 'Versand', subtitle: 'Verwalten Sie Versandoptionen und Tarife', name: 'Name', region: 'Region', price: 'Preis', addShipping: 'Versandoption hinzufügen' },
     taxes: { title: 'Steuern', subtitle: 'Verwalten Sie Steuersätze und Regeln', name: 'Name', region: 'Region', rate: 'Satz', addTax: 'Steuer hinzufügen' },
     login: { title: 'Administrator-Anmeldung', subtitle: 'Shop-Verwaltungspanel', email: 'E-Mail', password: 'Passwort', loginButton: 'Anmelden', forgotPassword: 'Passwort vergessen?' }

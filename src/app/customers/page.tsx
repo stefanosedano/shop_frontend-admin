@@ -9,7 +9,7 @@ import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
 
-type SortField = 'id' | 'email' | 'full_name' | 'is_admin' | 'is_active' | 'created_at'
+type SortField = 'id' | 'email' | 'full_name' | 'is_active' | 'created_at'
 type SortDirection = 'asc' | 'desc' | null
 
 export default function UsersPage() {
@@ -35,8 +35,7 @@ export default function UsersPage() {
   })
   const [formData, setFormData] = useState({
     email: '',
-    full_name: '',
-    is_admin: false
+    full_name: ''
   })
 
   useEffect(() => {
@@ -59,10 +58,12 @@ export default function UsersPage() {
   const buildQueryString = () => {
     const params = new URLSearchParams()
     
+    // Filter only customers (non-admin users)
+    params.append('admin', 'no')
+    
     if (filters.id) params.append('id', filters.id)
     if (filters.email) params.append('email', filters.email)
     if (filters.full_name) params.append('full_name', filters.full_name)
-    if (filters.admin) params.append('admin', filters.admin)
     if (filters.active) params.append('active', filters.active)
     if (filters.created) params.append('created', filters.created)
     if (sortField) {
@@ -176,8 +177,7 @@ export default function UsersPage() {
     setEditingUser(user)
     setFormData({
       email: user.email,
-      full_name: user.full_name || '',
-      is_admin: user.is_admin
+      full_name: user.full_name || ''
     })
     setShowModal(true)
   }
@@ -219,7 +219,7 @@ export default function UsersPage() {
       )
       
       setShowModal(false)
-      setFormData({ email: '', full_name: '', is_admin: false })
+      setFormData({ email: '', full_name: '' })
       await checkAuthAndLoadUsers()
       alert(t.users.updatedSuccess)
     } catch (error) {
@@ -330,23 +330,6 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.admin}</span>
-                    <button onClick={() => handleSort('is_admin')} className="hover:bg-gray-200 rounded p-1">
-                      <SortIcon field="is_admin" />
-                    </button>
-                  </div>
-                  <input
-                    id="filter-user-admin"
-                    name="filter-user-admin"
-                    type="text"
-                    placeholder={t.users.filterPlaceholder}
-                    value={filters.admin}
-                    onChange={(e) => handleFilterChange('admin', e.target.value)}
-                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                </th>
-                <th className="px-6 py-3">
-                  <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.active}</span>
                     <button onClick={() => handleSort('is_active')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="is_active" />
@@ -390,11 +373,6 @@ export default function UsersPage() {
                   <td>{user.id}</td>
                   <td className="font-medium">{user.email}</td>
                   <td>{user.full_name || t.users.na}</td>
-                  <td>
-                    <span className={`badge ${user.is_admin ? 'badge-success' : 'badge-neutral'}`}>
-                      {user.is_admin ? t.users.yes : t.users.no}
-                    </span>
-                  </td>
                   <td>
                     <span className={`badge ${user.is_active ? 'badge-success' : 'badge-error'}`}>
                       {user.is_active ? t.users.active : t.users.inactive}
@@ -469,19 +447,6 @@ export default function UsersPage() {
                       onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                  </div>
-
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id="is_admin"
-                      checked={formData.is_admin}
-                      onChange={(e) => setFormData({ ...formData, is_admin: e.target.checked })}
-                      className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label htmlFor="is_admin" className="ml-2 text-sm font-medium text-gray-700">
-                      {t.users.adminUser}
-                    </label>
                   </div>
 
                   <div className="flex gap-3 pt-4">

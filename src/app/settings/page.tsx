@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
 
@@ -34,6 +35,7 @@ interface TranslationStatus {
 
 export default function SettingsPage() {
   const router = useRouter()
+  const { t, language } = useLanguage()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [settings, setSettings] = useState<Setting[]>([])
@@ -267,9 +269,9 @@ export default function SettingsPage() {
     <AdminLayout>
       <div className="p-6 max-w-4xl">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-ui-fg-base">Settings</h1>
+          <h1 className="text-2xl font-semibold text-ui-fg-base">{t.settings.title}</h1>
           <p className="text-ui-fg-muted mt-1 txt-compact-medium">
-            Manage your store settings and AI configuration
+            {t.settings.subtitle}
           </p>
         </div>
 
@@ -277,46 +279,86 @@ export default function SettingsPage() {
           {/* OpenAI Configuration */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
-              OpenAI Configuration
+              {t.settings.openaiConfig}
             </h2>
             <p className="text-sm text-ui-fg-muted mb-4">
-              Configure OpenAI API for automatic product and category translations
+              {t.settings.openaiConfigDesc}
             </p>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                  API Key
+                  {t.settings.apiKey}
                 </label>
                 <input
                   type="password"
                   value={openaiApiKey}
                   onChange={(e) => setOpenaiApiKey(e.target.value)}
-                  placeholder="sk-..."
+                  placeholder={t.settings.apiKeyPlaceholder}
                   className="input-field w-full"
                 />
                 <p className="text-xs text-ui-fg-muted mt-1">
-                  Your OpenAI API key (keep this secret)
+                  {t.settings.apiKeyDesc}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                  GPT Model
+                  {t.settings.gptModel}
                 </label>
                 <select
                   value={openaiModel}
                   onChange={(e) => setOpenaiModel(e.target.value)}
                   className="input-field w-full"
                 >
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast & Economical)</option>
-                  <option value="gpt-4">GPT-4 (Better Quality)</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo (Faster GPT-4)</option>
-                  <option value="gpt-4o">GPT-4o (Latest & Best)</option>
-                  <option value="gpt-4o-mini">GPT-4o Mini (Fast & Affordable)</option>
+                  {language === 'en' && (
+                    <>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast & Economical)</option>
+                      <option value="gpt-4">GPT-4 (Better Quality)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo (Faster GPT-4)</option>
+                      <option value="gpt-4o">GPT-4o (Latest & Best)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Fast & Affordable)</option>
+                    </>
+                  )}
+                  {language === 'es' && (
+                    <>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Rápido y Económico)</option>
+                      <option value="gpt-4">GPT-4 (Mejor Calidad)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo (GPT-4 Más Rápido)</option>
+                      <option value="gpt-4o">GPT-4o (Último y Mejor)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Rápido y Económico)</option>
+                    </>
+                  )}
+                  {language === 'it' && (
+                    <>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Veloce ed Economico)</option>
+                      <option value="gpt-4">GPT-4 (Migliore Qualità)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo (GPT-4 Più Veloce)</option>
+                      <option value="gpt-4o">GPT-4o (Ultimo e Migliore)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Veloce ed Economico)</option>
+                    </>
+                  )}
+                  {language === 'fr' && (
+                    <>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Rapide et Économique)</option>
+                      <option value="gpt-4">GPT-4 (Meilleure Qualité)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo (GPT-4 Plus Rapide)</option>
+                      <option value="gpt-4o">GPT-4o (Dernier et Meilleur)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Rapide et Abordable)</option>
+                    </>
+                  )}
+                  {language === 'de' && (
+                    <>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo (Schnell und Wirtschaftlich)</option>
+                      <option value="gpt-4">GPT-4 (Bessere Qualität)</option>
+                      <option value="gpt-4-turbo">GPT-4 Turbo (Schnelleres GPT-4)</option>
+                      <option value="gpt-4o">GPT-4o (Neuestes und Bestes)</option>
+                      <option value="gpt-4o-mini">GPT-4o Mini (Schnell und Erschwinglich)</option>
+                    </>
+                  )}
                 </select>
                 <p className="text-xs text-ui-fg-muted mt-1">
-                  Model used for AI translations - GPT-4 models provide better translations but cost more
+                  {t.settings.modelDesc}
                 </p>
               </div>
 
@@ -326,13 +368,47 @@ export default function SettingsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <div className="text-sm text-ui-fg-subtle">
-                    <strong>Model Comparison:</strong>
-                    <ul className="mt-2 space-y-1 text-xs">
-                      <li>• <strong>GPT-3.5 Turbo:</strong> Best for high-volume, quick translations (~$0.002/1K tokens)</li>
-                      <li>• <strong>GPT-4o Mini:</strong> Good balance of quality and speed (~$0.15/1M input tokens)</li>
-                      <li>• <strong>GPT-4o:</strong> Best quality for product descriptions (~$2.50/1M input tokens)</li>
-                      <li>• <strong>GPT-4 Turbo:</strong> High-quality, good for detailed content (~$10/1M input tokens)</li>
-                    </ul>
+                    <strong>{t.settings.modelComparison}</strong>
+                    {language === 'en' && (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• <strong>GPT-3.5 Turbo:</strong> Best for high-volume, quick translations (~$0.002/1K tokens)</li>
+                        <li>• <strong>GPT-4o Mini:</strong> Good balance of quality and speed (~$0.15/1M input tokens)</li>
+                        <li>• <strong>GPT-4o:</strong> Best quality for product descriptions (~$2.50/1M input tokens)</li>
+                        <li>• <strong>GPT-4 Turbo:</strong> High-quality, good for detailed content (~$10/1M input tokens)</li>
+                      </ul>
+                    )}
+                    {language === 'es' && (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• <strong>GPT-3.5 Turbo:</strong> Mejor para traducciones rápidas de gran volumen (~$0.002/1K tokens)</li>
+                        <li>• <strong>GPT-4o Mini:</strong> Buen equilibrio entre calidad y velocidad (~$0.15/1M tokens de entrada)</li>
+                        <li>• <strong>GPT-4o:</strong> Mejor calidad para descripciones de productos (~$2.50/1M tokens de entrada)</li>
+                        <li>• <strong>GPT-4 Turbo:</strong> Alta calidad, bueno para contenido detallado (~$10/1M tokens de entrada)</li>
+                      </ul>
+                    )}
+                    {language === 'it' && (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• <strong>GPT-3.5 Turbo:</strong> Migliore per traduzioni rapide ad alto volume (~$0.002/1K tokens)</li>
+                        <li>• <strong>GPT-4o Mini:</strong> Buon equilibrio tra qualità e velocità (~$0.15/1M tokens di input)</li>
+                        <li>• <strong>GPT-4o:</strong> Migliore qualità per descrizioni di prodotti (~$2.50/1M tokens di input)</li>
+                        <li>• <strong>GPT-4 Turbo:</strong> Alta qualità, ottimo per contenuti dettagliati (~$10/1M tokens di input)</li>
+                      </ul>
+                    )}
+                    {language === 'fr' && (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• <strong>GPT-3.5 Turbo:</strong> Meilleur pour les traductions rapides en grand volume (~$0.002/1K tokens)</li>
+                        <li>• <strong>GPT-4o Mini:</strong> Bon équilibre entre qualité et vitesse (~$0.15/1M tokens d'entrée)</li>
+                        <li>• <strong>GPT-4o:</strong> Meilleure qualité pour les descriptions de produits (~$2.50/1M tokens d'entrée)</li>
+                        <li>• <strong>GPT-4 Turbo:</strong> Haute qualité, bon pour le contenu détaillé (~$10/1M tokens d'entrée)</li>
+                      </ul>
+                    )}
+                    {language === 'de' && (
+                      <ul className="mt-2 space-y-1 text-xs">
+                        <li>• <strong>GPT-3.5 Turbo:</strong> Am besten für schnelle Übersetzungen in großem Umfang (~$0.002/1K Tokens)</li>
+                        <li>• <strong>GPT-4o Mini:</strong> Gutes Gleichgewicht zwischen Qualität und Geschwindigkeit (~$0.15/1M Eingabe-Tokens)</li>
+                        <li>• <strong>GPT-4o:</strong> Beste Qualität für Produktbeschreibungen (~$2.50/1M Eingabe-Tokens)</li>
+                        <li>• <strong>GPT-4 Turbo:</strong> Hohe Qualität, gut für detaillierte Inhalte (~$10/1M Eingabe-Tokens)</li>
+                      </ul>
+                    )}
                   </div>
                 </div>
               </div>
@@ -342,10 +418,10 @@ export default function SettingsPage() {
           {/* S3 / Cloud Storage Configuration */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
-              Cloud Storage (S3/R2/Spaces)
+              {t.settings.cloudStorage}
             </h2>
             <p className="text-sm text-ui-fg-muted mb-4">
-              Configure cloud storage for product images (AWS S3, Cloudflare R2, DigitalOcean Spaces)
+              {t.settings.cloudStorageDesc}
             </p>
             
             <div className="space-y-4">
@@ -358,7 +434,7 @@ export default function SettingsPage() {
                   className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
                 />
                 <label htmlFor="s3_enabled" className="ml-2 text-sm text-ui-fg-base font-medium">
-                  Enable S3-Compatible Storage
+                  {t.settings.enableS3}
                 </label>
               </div>
 
@@ -366,29 +442,29 @@ export default function SettingsPage() {
                 <>
                   <div>
                     <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                      S3 Endpoint URL
+                      {t.settings.s3Endpoint}
                     </label>
                     <input
                       type="text"
                       value={s3Endpoint}
                       onChange={(e) => setS3Endpoint(e.target.value)}
-                      placeholder="https://s3.us-east-1.amazonaws.com or https://xxx.r2.cloudflarestorage.com"
+                      placeholder={t.settings.s3EndpointPlaceholder}
                       className="input-field w-full"
                     />
                     <p className="text-xs text-ui-fg-muted mt-1">
-                      Leave empty for AWS S3, or specify custom endpoint for R2/Spaces
+                      {t.settings.s3EndpointDesc}
                     </p>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                      Bucket Name
+                      {t.settings.bucketName}
                     </label>
                     <input
                       type="text"
                       value={s3Bucket}
                       onChange={(e) => setS3Bucket(e.target.value)}
-                      placeholder="my-shop-images"
+                      placeholder={t.settings.bucketPlaceholder}
                       className="input-field w-full"
                     />
                   </div>
@@ -396,26 +472,26 @@ export default function SettingsPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                        Access Key ID
+                        {t.settings.accessKeyId}
                       </label>
                       <input
                         type="text"
                         value={s3AccessKey}
                         onChange={(e) => setS3AccessKey(e.target.value)}
-                        placeholder="AKIAIOSFODNN7EXAMPLE"
+                        placeholder={t.settings.accessKeyPlaceholder}
                         className="input-field w-full"
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                        Secret Access Key
+                        {t.settings.secretAccessKey}
                       </label>
                       <input
                         type="password"
                         value={s3SecretKey}
                         onChange={(e) => setS3SecretKey(e.target.value)}
-                        placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                        placeholder={t.settings.secretAccessKeyPlaceholder}
                         className="input-field w-full"
                       />
                     </div>
@@ -423,7 +499,7 @@ export default function SettingsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                      Region
+                      {t.settings.region}
                     </label>
                     <select
                       value={s3Region}
@@ -435,23 +511,23 @@ export default function SettingsPage() {
                       <option value="eu-west-1">EU (Ireland)</option>
                       <option value="eu-central-1">EU (Frankfurt)</option>
                       <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                      <option value="auto">Auto (for Cloudflare R2)</option>
+                      <option value="auto">{language === 'en' ? 'Auto (for Cloudflare R2)' : language === 'es' ? 'Auto (para Cloudflare R2)' : language === 'it' ? 'Auto (per Cloudflare R2)' : language === 'fr' ? 'Auto (pour Cloudflare R2)' : 'Auto (für Cloudflare R2)'}</option>
                     </select>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                      Public URL / CDN URL
+                      {t.settings.publicUrl}
                     </label>
                     <input
                       type="text"
                       value={s3PublicUrl}
                       onChange={(e) => setS3PublicUrl(e.target.value)}
-                      placeholder="https://cdn.myshop.com or https://pub-xxx.r2.dev"
+                      placeholder={t.settings.publicUrlPlaceholder}
                       className="input-field w-full"
                     />
                     <p className="text-xs text-ui-fg-muted mt-1">
-                      The public URL where images will be accessible (CDN domain or R2 public bucket URL)
+                      {t.settings.publicUrlDesc}
                     </p>
                   </div>
 
@@ -461,13 +537,47 @@ export default function SettingsPage() {
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <div className="text-sm text-ui-fg-subtle">
-                        <strong>Provider Quick Setup:</strong>
-                        <ul className="mt-2 space-y-1 text-xs">
-                          <li>• <strong>AWS S3:</strong> Leave endpoint empty, set region, use IAM credentials</li>
-                          <li>• <strong>Cloudflare R2:</strong> Endpoint from R2 dashboard, region = auto, use R2 API tokens</li>
-                          <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[region].digitaloceanspaces.com</li>
-                          <li>• <strong>MinIO:</strong> Your MinIO server URL as endpoint</li>
-                        </ul>
+                        <strong>{t.settings.providerQuickSetup}</strong>
+                        {language === 'en' && (
+                          <ul className="mt-2 space-y-1 text-xs">
+                            <li>• <strong>AWS S3:</strong> Leave endpoint empty, set region, use IAM credentials</li>
+                            <li>• <strong>Cloudflare R2:</strong> Endpoint from R2 dashboard, region = auto, use R2 API tokens</li>
+                            <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[region].digitaloceanspaces.com</li>
+                            <li>• <strong>MinIO:</strong> Your MinIO server URL as endpoint</li>
+                          </ul>
+                        )}
+                        {language === 'es' && (
+                          <ul className="mt-2 space-y-1 text-xs">
+                            <li>• <strong>AWS S3:</strong> Dejar endpoint vacío, establecer región, usar credenciales IAM</li>
+                            <li>• <strong>Cloudflare R2:</strong> Endpoint desde el panel R2, región = auto, usar tokens API R2</li>
+                            <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[región].digitaloceanspaces.com</li>
+                            <li>• <strong>MinIO:</strong> URL de tu servidor MinIO como endpoint</li>
+                          </ul>
+                        )}
+                        {language === 'it' && (
+                          <ul className="mt-2 space-y-1 text-xs">
+                            <li>• <strong>AWS S3:</strong> Lascia endpoint vuoto, imposta regione, usa credenziali IAM</li>
+                            <li>• <strong>Cloudflare R2:</strong> Endpoint dalla dashboard R2, regione = auto, usa token API R2</li>
+                            <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[regione].digitaloceanspaces.com</li>
+                            <li>• <strong>MinIO:</strong> URL del tuo server MinIO come endpoint</li>
+                          </ul>
+                        )}
+                        {language === 'fr' && (
+                          <ul className="mt-2 space-y-1 text-xs">
+                            <li>• <strong>AWS S3:</strong> Laisser endpoint vide, définir région, utiliser identifiants IAM</li>
+                            <li>• <strong>Cloudflare R2:</strong> Endpoint depuis tableau de bord R2, région = auto, utiliser jetons API R2</li>
+                            <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[région].digitaloceanspaces.com</li>
+                            <li>• <strong>MinIO:</strong> URL de votre serveur MinIO comme endpoint</li>
+                          </ul>
+                        )}
+                        {language === 'de' && (
+                          <ul className="mt-2 space-y-1 text-xs">
+                            <li>• <strong>AWS S3:</strong> Endpoint leer lassen, Region festlegen, IAM-Anmeldedaten verwenden</li>
+                            <li>• <strong>Cloudflare R2:</strong> Endpoint aus R2-Dashboard, Region = auto, R2-API-Tokens verwenden</li>
+                            <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[Region].digitaloceanspaces.com</li>
+                            <li>• <strong>MinIO:</strong> Ihre MinIO-Server-URL als Endpoint</li>
+                          </ul>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -479,10 +589,10 @@ export default function SettingsPage() {
           {/* Translations Management */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
-              Translations
+              {t.settings.translations}
             </h2>
             <p className="text-sm text-ui-fg-muted mb-4">
-              Automatically translate all products and categories to all available languages
+              {t.settings.translationsDesc}
             </p>
 
             {/* Translation Options */}
@@ -497,7 +607,7 @@ export default function SettingsPage() {
                   className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
                 />
                 <label htmlFor="useAI" className="ml-2 text-sm text-ui-fg-base">
-                  Use AI Translation (OpenAI) - Better quality but slower and requires API key
+                  {t.settings.useAI}
                 </label>
               </div>
               
@@ -511,19 +621,19 @@ export default function SettingsPage() {
                   className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
                 />
                 <label htmlFor="skipExisting" className="ml-2 text-sm text-ui-fg-base">
-                  Skip already translated items - Only translate new/untranslated content
+                  {t.settings.skipExisting}
                 </label>
               </div>
               
               {!useAI && (
                 <div className="bg-ui-bg-subtle p-3 rounded-lg text-xs text-ui-fg-subtle">
-                  Simple translation uses basic word replacement. Results may vary in quality.
+                  {t.settings.useAIDesc}
                 </div>
               )}
               
               {!skipExisting && (
                 <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-xs text-yellow-800">
-                  ⚠️ Warning: Re-translating all items will overwrite existing translations and use more API credits.
+                  {t.settings.skipExistingDesc}
                 </div>
               )}
             </div>
@@ -534,7 +644,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-ui-fg-interactive mr-2"></div>
-                    <span className="text-sm font-medium text-ui-fg-base">Translation in Progress</span>
+                    <span className="text-sm font-medium text-ui-fg-base">{t.settings.translationProgress}</span>
                   </div>
                   <span className="text-sm font-medium text-ui-fg-interactive">
                     {translationStatus.progress_percentage.toFixed(1)}%
@@ -552,26 +662,26 @@ export default function SettingsPage() {
                 {/* Details */}
                 <div className="space-y-1 text-xs text-ui-fg-subtle">
                   <div className="flex justify-between">
-                    <span>Current:</span>
+                    <span>{t.settings.current}</span>
                     <span className="text-ui-fg-base font-medium truncate ml-2 max-w-xs">
                       {translationStatus.current_item}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Progress:</span>
+                    <span>{t.settings.progress}</span>
                     <span className="text-ui-fg-base">
                       {translationStatus.completed_items} / {translationStatus.total_items} items
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>Remaining:</span>
+                    <span>{t.settings.remaining}</span>
                     <span className="text-ui-fg-base">
                       {translationStatus.items_remaining} items (~{formatTime(translationStatus.estimated_time_remaining)})
                     </span>
                   </div>
                   {translationStatus.errors > 0 && (
                     <div className="flex justify-between text-red-600">
-                      <span>Errors:</span>
+                      <span>{t.settings.errors}</span>
                       <span className="font-medium">{translationStatus.errors}</span>
                     </div>
                   )}
@@ -587,9 +697,9 @@ export default function SettingsPage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                   <div className="text-sm">
-                    <p className="font-medium text-green-900">Translation Complete!</p>
+                    <p className="font-medium text-green-900">{t.settings.translationComplete}</p>
                     <p className="text-green-700 mt-1">
-                      Successfully translated {translationStatus.completed_items} items
+                      {t.settings.translationCompleteDesc.replace('{0}', translationStatus.completed_items.toString())}
                       {translationStatus.errors > 0 && ` (${translationStatus.errors} errors)`}
                     </p>
                   </div>
@@ -604,14 +714,14 @@ export default function SettingsPage() {
                 disabled={translating || saving}
                 className="btn-secondary"
               >
-                Test Translation (5 items)
+                {t.settings.testTranslation}
               </button>
               <button
                 onClick={() => startTranslation(false)}
                 disabled={translating || saving}
                 className="btn-primary"
               >
-                {translating ? 'Translating...' : 'Translate All Content'}
+                {translating ? t.settings.translating : t.settings.translateAll}
               </button>
             </div>
 
@@ -621,13 +731,13 @@ export default function SettingsPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 <div className="text-sm text-ui-fg-subtle">
-                  <strong>Translation Info:</strong>
+                  <strong>{t.settings.translationInfo}</strong>
                   <ul className="mt-2 space-y-1 text-xs">
-                    <li>• <strong>Test Mode:</strong> Translates only 5 items for testing (~10-30 seconds)</li>
-                    <li>• <strong>Full Translation:</strong> Translates all products and categories (may take hours for large catalogs)</li>
-                    <li>• <strong>AI Translation:</strong> Uses OpenAI for high-quality, context-aware translations</li>
-                    <li>• <strong>Background Process:</strong> Runs in background, your admin panel remains fully responsive</li>
-                    <li>• <strong>Real-time Progress:</strong> This page automatically updates to show translation progress</li>
+                    <li>• <strong>{t.settings.testMode}</strong></li>
+                    <li>• <strong>{t.settings.fullTranslation}</strong></li>
+                    <li>• <strong>{t.settings.aiTranslation}</strong></li>
+                    <li>• <strong>{t.settings.backgroundProcess}</strong></li>
+                    <li>• <strong>{t.settings.realtimeProgress}</strong></li>
                   </ul>
                 </div>
               </div>
@@ -637,13 +747,13 @@ export default function SettingsPage() {
           {/* Store Details */}
           <div className="card p-6">
             <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
-              Store Details
+              {t.settings.storeDetails}
             </h2>
             
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                  Store Name
+                  {t.settings.storeName}
                 </label>
                 <input
                   type="text"
@@ -656,7 +766,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                  Store Email
+                  {t.settings.storeEmail}
                 </label>
                 <input
                   type="email"
@@ -669,7 +779,7 @@ export default function SettingsPage() {
 
               <div>
                 <label className="block text-sm font-medium text-ui-fg-base mb-2">
-                  Store Phone
+                  {t.settings.storePhone}
                 </label>
                 <input
                   type="tel"
@@ -689,7 +799,7 @@ export default function SettingsPage() {
               disabled={saving}
               className="btn-primary"
             >
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t.common.loading : t.settings.saveChanges}
             </button>
           </div>
         </div>
