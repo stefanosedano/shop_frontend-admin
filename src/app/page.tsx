@@ -423,10 +423,10 @@ export default function AdminDashboard() {
           <table className="table">
             <thead>
               <tr>
-                <th>Order</th>
-                <th>Amount</th>
-                <th>Status</th>
-                <th>Date</th>
+                <th>{t.dashboard.order}</th>
+                <th>{t.dashboard.amount}</th>
+                <th>{t.dashboard.orderStatus}</th>
+                <th>{t.dashboard.date}</th>
               </tr>
             </thead>
             <tbody>
@@ -446,7 +446,13 @@ export default function AdminDashboard() {
                       order.status === 'pending' ? 'badge-warning' :
                       'badge-neutral'
                     }`}>
-                      {order.status}
+                      {order.status === 'delivered' ? t.dashboard.statusDelivered :
+                       order.status === 'shipped' ? t.dashboard.statusShipped :
+                       order.status === 'processing' ? t.dashboard.statusProcessing :
+                       order.status === 'pending' ? t.dashboard.statusPending :
+                       order.status === 'cancelled' ? t.dashboard.statusCancelled :
+                       order.status === 'completed' ? t.dashboard.statusCompleted :
+                       order.status}
                     </span>
                   </td>
                   <td className="text-ui-fg-muted">
@@ -461,7 +467,7 @@ export default function AdminDashboard() {
 
       {/* Top Products */}
       <div className="card">
-        <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">Top Selling Products</h2>
+        <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">{t.dashboard.topSellingProducts}</h2>
         <div className="space-y-2">
           {stats.top_products.map((product: any, index: number) => (
             <div
@@ -474,14 +480,14 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <p className="font-medium text-ui-fg-base txt-compact-medium">{product.name}</p>
-                  <p className="txt-compact-small text-ui-fg-muted">{product.total_sold} units sold</p>
+                  <p className="txt-compact-small text-ui-fg-muted">{product.total_sold} {t.dashboard.unitsSold}</p>
                 </div>
               </div>
               <div className="text-right">
                 <p className="font-semibold text-ui-fg-base txt-compact-medium">
                   ${(product.total_sold * (product.price || 0)).toFixed(2)}
                 </p>
-                <p className="txt-compact-small text-ui-fg-muted">Revenue</p>
+                <p className="txt-compact-small text-ui-fg-muted">{t.dashboard.revenueLabel}</p>
               </div>
             </div>
           ))}
