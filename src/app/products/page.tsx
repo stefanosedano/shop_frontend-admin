@@ -438,11 +438,20 @@ export default function ProductsPage() {
                     {product.sku || '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {product.is_active ? t.common.active : t.common.inactive}
-                    </span>
+                    <div className="flex flex-col gap-1">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                        product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {product.is_active ? t.common.active : t.common.inactive}
+                      </span>
+                      {product.approval_status && product.approval_status !== 'approved' && (
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                          product.approval_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                        }`}>
+                          {product.approval_status === 'pending' ? 'Pending' : 'Rejected'}
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <button 

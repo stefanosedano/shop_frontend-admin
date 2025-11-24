@@ -29,7 +29,8 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
-  ChevronDown
+  ChevronDown,
+  Clock
 } from 'lucide-react'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -82,6 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="h-px bg-ui-border-base my-2"></div>
           <NavLink href="/orders" icon={<ShoppingCart className="w-4 h-4" />} label={t.nav.orders} active={pathname.startsWith('/orders')} collapsed={!sidebarOpen} />
           <NavLink href="/products" icon={<Package className="w-4 h-4" />} label={t.nav.products} active={pathname.startsWith('/products')} collapsed={!sidebarOpen} />
+          <NavLink href="/pending-products" icon={<Clock className="w-4 h-4 text-yellow-600" />} label="Pending Approval" active={pathname.startsWith('/pending-products')} collapsed={!sidebarOpen} />
           <NavLink href="/collections" icon={<FolderKanban className="w-4 h-4" />} label={t.nav.collections} active={pathname.startsWith('/collections')} collapsed={!sidebarOpen} />
           <NavLink href="/categories" icon={<FolderTree className="w-4 h-4" />} label={t.nav.categories} active={pathname.startsWith('/categories')} collapsed={!sidebarOpen} />
           <NavLink href="/inventory" icon={<BarChart3 className="w-4 h-4" />} label={t.nav.inventory} active={pathname.startsWith('/inventory')} collapsed={!sidebarOpen} />
