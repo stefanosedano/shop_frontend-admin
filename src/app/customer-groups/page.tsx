@@ -81,7 +81,7 @@ export default function CustomerGroupsAdminPage() {
   };
 
   const deleteGroup = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this group?')) return;
+    if (!confirm(t.customerGroups.deleteGroupConfirm)) return;
 
     try {
       const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${id}`, {
@@ -91,16 +91,16 @@ export default function CustomerGroupsAdminPage() {
       if (res.ok) {
         fetchData();
       } else {
-        alert('Failed to delete group');
+        alert(t.customerGroups.deleteGroupError);
       }
     } catch (error) {
       console.error('Error deleting group:', error);
-      alert('Error deleting group');
+      alert(t.customerGroups.deleteGroupError);
     }
   };
 
   const deleteSegment = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this segment?')) return;
+    if (!confirm(t.customerGroups.deleteSegmentConfirm)) return;
 
     try {
       const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/segments/${id}`, {
@@ -110,16 +110,16 @@ export default function CustomerGroupsAdminPage() {
       if (res.ok) {
         fetchData();
       } else {
-        alert('Failed to delete segment');
+        alert(t.customerGroups.deleteSegmentError);
       }
     } catch (error) {
       console.error('Error deleting segment:', error);
-      alert('Error deleting segment');
+      alert(t.customerGroups.deleteSegmentError);
     }
   };
 
   const updateAllSegments = async () => {
-    if (!confirm('This will recalculate all segment memberships. Continue?')) return;
+    if (!confirm(t.customerGroups.updateAllConfirm)) return;
 
     setUpdating(true);
     try {
@@ -218,7 +218,7 @@ export default function CustomerGroupsAdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
               >
-                Customer Groups
+                {t.customerGroups.customerGroupsTab}
                 <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
                   activeTab === 'groups' ? 'bg-violet-100 text-violet-600' : 'bg-gray-100 text-gray-900'
                 }`}>
@@ -233,7 +233,7 @@ export default function CustomerGroupsAdminPage() {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
               >
-                Dynamic Segments
+                {t.customerGroups.dynamicSegmentsTab}
                 <span className={`ml-2 py-0.5 px-2 rounded-full text-xs ${
                   activeTab === 'segments' ? 'bg-violet-100 text-violet-600' : 'bg-gray-100 text-gray-900'
                 }`}>
@@ -247,15 +247,15 @@ export default function CustomerGroupsAdminPage() {
             {activeTab === 'groups' ? (
               <div>
                 <p className="text-sm text-gray-600 mb-4">
-                  Customer groups are manually assigned collections. Use them for special pricing, exclusive promotions, or VIP treatment.
+                  {t.customerGroups.groupsDescription}
                 </p>
                 {groups.length === 0 ? (
                   <div className="text-center py-12">
                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No groups</h3>
-                    <p className="mt-1 text-sm text-gray-500">Get started by creating a new customer group.</p>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">{t.customerGroups.noGroups}</h3>
+                    <p className="mt-1 text-sm text-gray-500">{t.customerGroups.noGroupsDescription}</p>
                   </div>
                 ) : (
                   <div className="border border-gray-200 rounded-md divide-y divide-gray-200">
@@ -266,7 +266,7 @@ export default function CustomerGroupsAdminPage() {
                             <div className="flex items-center">
                               <h3 className="text-sm font-medium text-gray-900">{group.name}</h3>
                               <span className="ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {group.customer_count || 0} members
+                                {group.customer_count || 0} {t.customerGroups.members}
                               </span>
                             </div>
                             {group.description && (
@@ -276,7 +276,7 @@ export default function CustomerGroupsAdminPage() {
                               <svg className="flex-shrink-0 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              Created {new Date(group.created_at).toLocaleDateString()}
+                              {t.customerGroups.created} {new Date(group.created_at).toLocaleDateString()}
                             </div>
                           </div>
                           <div className="ml-4 flex items-center space-x-2">
@@ -284,19 +284,19 @@ export default function CustomerGroupsAdminPage() {
                               href={`/customer-groups/${group.id}`}
                               className="btn-ghost txt-compact-small"
                             >
-                              Manage
+                              {t.customerGroups.manage}
                             </Link>
                             <Link
                               href={`/customer-groups/${group.id}/edit`}
                               className="btn-ghost txt-compact-small"
                             >
-                              Edit
+                              {t.common.edit}
                             </Link>
                             <button
                               onClick={() => deleteGroup(group.id)}
                               className="btn-ghost txt-compact-small text-red-600"
                             >
-                              Delete
+                              {t.common.delete}
                             </button>
                           </div>
                         </div>
@@ -309,7 +309,7 @@ export default function CustomerGroupsAdminPage() {
               <div>
                 <div className="flex justify-between items-start mb-4">
                   <p className="text-sm text-gray-600">
-                    Dynamic segments automatically include customers based on rules. They update automatically.
+                    {t.customerGroups.segmentsDescription}
                   </p>
                   <button
                     onClick={updateAllSegments}
@@ -319,7 +319,7 @@ export default function CustomerGroupsAdminPage() {
                     <svg className={`-ml-0.5 mr-2 h-4 w-4 ${updating ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
-                    {updating ? 'Updating...' : 'Update All'}
+                    {updating ? t.customerGroups.updating : t.customerGroups.updateAll}
                   </button>
                 </div>
                 {segments.length === 0 ? (
@@ -327,8 +327,8 @@ export default function CustomerGroupsAdminPage() {
                     <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">No segments</h3>
-                    <p className="mt-1 text-sm text-gray-500">Create a segment to automatically group customers.</p>
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">{t.customerGroups.noSegments}</h3>
+                    <p className="mt-1 text-sm text-gray-500">{t.customerGroups.noSegmentsDescription}</p>
                   </div>
                 ) : (
                   <div className="border border-gray-200 rounded-md divide-y divide-gray-200">
@@ -343,18 +343,18 @@ export default function CustomerGroupsAdminPage() {
                                   ? 'bg-green-100 text-green-800'
                                   : 'bg-gray-100 text-gray-600'
                               }`}>
-                                {segment.is_active ? 'Active' : 'Inactive'}
+                                {segment.is_active ? t.common.active : t.common.inactive}
                               </span>
                               <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {segment.customer_count || 0} members
+                                {segment.customer_count || 0} {t.customerGroups.members}
                               </span>
-                              <span className="text-xs text-gray-400">Priority {segment.priority}</span>
+                              <span className="text-xs text-gray-400">{t.customerGroups.priority} {segment.priority}</span>
                             </div>
                             {segment.description && (
                               <p className="mt-1 text-sm text-gray-500">{segment.description}</p>
                             )}
                             <div className="mt-2">
-                              <span className="text-xs font-medium text-gray-500">Rules:</span>
+                              <span className="text-xs font-medium text-gray-500">{t.customerGroups.rules}:</span>
                               <div className="mt-1 flex flex-wrap gap-2">
                                 {Object.entries(segment.rules).map(([key, value]: [string, any]) => (
                                   <span key={key} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-gray-100 text-gray-700">
@@ -367,7 +367,7 @@ export default function CustomerGroupsAdminPage() {
                               <svg className="flex-shrink-0 mr-1.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                               </svg>
-                              Created {new Date(segment.created_at).toLocaleDateString()}
+                              {t.customerGroups.created} {new Date(segment.created_at).toLocaleDateString()}
                             </div>
                           </div>
                           <div className="ml-4 flex items-center space-x-2">
@@ -375,19 +375,19 @@ export default function CustomerGroupsAdminPage() {
                               href={`/customer-groups/segment/${segment.id}`}
                               className="btn-ghost txt-compact-small"
                             >
-                              View
+                              {t.customerGroups.view}
                             </Link>
                             <Link
                               href={`/customer-groups/segment/${segment.id}/edit`}
                               className="btn-ghost txt-compact-small"
                             >
-                              Edit
+                              {t.common.edit}
                             </Link>
                             <button
                               onClick={() => deleteSegment(segment.id)}
                               className="btn-ghost txt-compact-small text-red-600"
                             >
-                              Delete
+                              {t.common.delete}
                             </button>
                           </div>
                         </div>
