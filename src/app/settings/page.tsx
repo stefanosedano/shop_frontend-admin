@@ -44,6 +44,15 @@ export default function SettingsPage() {
   const [storeName, setStoreName] = useState('')
   const [storeEmail, setStoreEmail] = useState('')
   const [storePhone, setStorePhone] = useState('')
+  
+  // S3 settings
+  const [s3Enabled, setS3Enabled] = useState(false)
+  const [s3Endpoint, setS3Endpoint] = useState('')
+  const [s3Bucket, setS3Bucket] = useState('')
+  const [s3AccessKey, setS3AccessKey] = useState('')
+  const [s3SecretKey, setS3SecretKey] = useState('')
+  const [s3Region, setS3Region] = useState('us-east-1')
+  const [s3PublicUrl, setS3PublicUrl] = useState('')
 
   // Translation status
   const [translationStatus, setTranslationStatus] = useState<TranslationStatus | null>(null)
@@ -104,6 +113,27 @@ export default function SettingsPage() {
           case 'store_phone':
             setStorePhone(setting.value || '')
             break
+          case 's3_enabled':
+            setS3Enabled(setting.value === 'true')
+            break
+          case 's3_endpoint':
+            setS3Endpoint(setting.value || '')
+            break
+          case 's3_bucket':
+            setS3Bucket(setting.value || '')
+            break
+          case 's3_access_key':
+            setS3AccessKey(setting.value || '')
+            break
+          case 's3_secret_key':
+            setS3SecretKey(setting.value || '')
+            break
+          case 's3_region':
+            setS3Region(setting.value || 'us-east-1')
+            break
+          case 's3_public_url':
+            setS3PublicUrl(setting.value || '')
+            break
         }
       })
     } catch (error: any) {
@@ -132,7 +162,14 @@ export default function SettingsPage() {
         openai_model: openaiModel,
         store_name: storeName,
         store_email: storeEmail,
-        store_phone: storePhone
+        store_phone: storePhone,
+        s3_enabled: s3Enabled.toString(),
+        s3_endpoint: s3Endpoint,
+        s3_bucket: s3Bucket,
+        s3_access_key: s3AccessKey,
+        s3_secret_key: s3SecretKey,
+        s3_region: s3Region,
+        s3_public_url: s3PublicUrl
       }
 
       await axios.post(
@@ -299,6 +336,143 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* S3 / Cloud Storage Configuration */}
+          <div className="card p-6">
+            <h2 className="text-lg font-semibold text-ui-fg-base mb-4">
+              Cloud Storage (S3/R2/Spaces)
+            </h2>
+            <p className="text-sm text-ui-fg-muted mb-4">
+              Configure cloud storage for product images (AWS S3, Cloudflare R2, DigitalOcean Spaces)
+            </p>
+            
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="s3_enabled"
+                  checked={s3Enabled}
+                  onChange={(e) => setS3Enabled(e.target.checked)}
+                  className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
+                />
+                <label htmlFor="s3_enabled" className="ml-2 text-sm text-ui-fg-base font-medium">
+                  Enable S3-Compatible Storage
+                </label>
+              </div>
+
+              {s3Enabled && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                      S3 Endpoint URL
+                    </label>
+                    <input
+                      type="text"
+                      value={s3Endpoint}
+                      onChange={(e) => setS3Endpoint(e.target.value)}
+                      placeholder="https://s3.us-east-1.amazonaws.com or https://xxx.r2.cloudflarestorage.com"
+                      className="input-field w-full"
+                    />
+                    <p className="text-xs text-ui-fg-muted mt-1">
+                      Leave empty for AWS S3, or specify custom endpoint for R2/Spaces
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                      Bucket Name
+                    </label>
+                    <input
+                      type="text"
+                      value={s3Bucket}
+                      onChange={(e) => setS3Bucket(e.target.value)}
+                      placeholder="my-shop-images"
+                      className="input-field w-full"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                        Access Key ID
+                      </label>
+                      <input
+                        type="text"
+                        value={s3AccessKey}
+                        onChange={(e) => setS3AccessKey(e.target.value)}
+                        placeholder="AKIAIOSFODNN7EXAMPLE"
+                        className="input-field w-full"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                        Secret Access Key
+                      </label>
+                      <input
+                        type="password"
+                        value={s3SecretKey}
+                        onChange={(e) => setS3SecretKey(e.target.value)}
+                        placeholder="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+                        className="input-field w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                      Region
+                    </label>
+                    <select
+                      value={s3Region}
+                      onChange={(e) => setS3Region(e.target.value)}
+                      className="input-field w-full"
+                    >
+                      <option value="us-east-1">US East (N. Virginia)</option>
+                      <option value="us-west-2">US West (Oregon)</option>
+                      <option value="eu-west-1">EU (Ireland)</option>
+                      <option value="eu-central-1">EU (Frankfurt)</option>
+                      <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
+                      <option value="auto">Auto (for Cloudflare R2)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-ui-fg-base mb-2">
+                      Public URL / CDN URL
+                    </label>
+                    <input
+                      type="text"
+                      value={s3PublicUrl}
+                      onChange={(e) => setS3PublicUrl(e.target.value)}
+                      placeholder="https://cdn.myshop.com or https://pub-xxx.r2.dev"
+                      className="input-field w-full"
+                    />
+                    <p className="text-xs text-ui-fg-muted mt-1">
+                      The public URL where images will be accessible (CDN domain or R2 public bucket URL)
+                    </p>
+                  </div>
+
+                  <div className="bg-ui-bg-subtle p-4 rounded-lg">
+                    <div className="flex items-start">
+                      <svg className="w-5 h-5 text-ui-fg-interactive mr-2 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div className="text-sm text-ui-fg-subtle">
+                        <strong>Provider Quick Setup:</strong>
+                        <ul className="mt-2 space-y-1 text-xs">
+                          <li>• <strong>AWS S3:</strong> Leave endpoint empty, set region, use IAM credentials</li>
+                          <li>• <strong>Cloudflare R2:</strong> Endpoint from R2 dashboard, region = auto, use R2 API tokens</li>
+                          <li>• <strong>DigitalOcean Spaces:</strong> Endpoint = https://[region].digitaloceanspaces.com</li>
+                          <li>• <strong>MinIO:</strong> Your MinIO server URL as endpoint</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
