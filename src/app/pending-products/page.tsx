@@ -35,7 +35,7 @@ export default function PendingProductsPage() {
   }, [])
 
   const checkAuthAndLoadProducts = async () => {
-    const token = localStorage.getItem('adminToken')
+    const token = localStorage.getItem('admin_token')
     
     if (!token) {
       router.push('/login')
@@ -57,7 +57,7 @@ export default function PendingProductsPage() {
       await loadPendingProducts(token)
     } catch (error) {
       console.error('Auth error:', error)
-      localStorage.removeItem('adminToken')
+      localStorage.removeItem('admin_token')
       router.push('/login')
     }
   }
@@ -77,7 +77,7 @@ export default function PendingProductsPage() {
   }
 
   const handleApprove = async (productId: number) => {
-    const token = localStorage.getItem('adminToken')
+    const token = localStorage.getItem('admin_token')
     if (!token) return
 
     setProcessing(productId)
@@ -100,7 +100,7 @@ export default function PendingProductsPage() {
   }
 
   const handleReject = async (productId: number) => {
-    const token = localStorage.getItem('adminToken')
+    const token = localStorage.getItem('admin_token')
     if (!token) return
 
     const reason = prompt('Rejection reason (optional):')
@@ -132,7 +132,7 @@ export default function PendingProductsPage() {
     return (
       <AdminLayout>
         <div className="flex justify-center items-center h-64">
-          <div className="text-xl">Loading pending products...</div>
+          <div className="text-xl">{t.common.loading}...</div>
         </div>
       </AdminLayout>
     )
@@ -228,7 +228,7 @@ export default function PendingProductsPage() {
                           className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <CheckCircle className="w-5 h-5" />
-                          {processing === product.id ? 'Processing...' : 'Approve'}
+                          {processing === product.id ? t.common.loading + '...' : 'Approve'}
                         </button>
                         
                         <button
@@ -237,7 +237,7 @@ export default function PendingProductsPage() {
                           className="flex items-center gap-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <XCircle className="w-5 h-5" />
-                          {processing === product.id ? 'Processing...' : 'Reject'}
+                          {processing === product.id ? t.common.loading + '...' : 'Reject'}
                         </button>
 
                         <button
