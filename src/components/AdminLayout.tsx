@@ -88,8 +88,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <NavLink href="/categories" icon={<FolderTree className="w-4 h-4" />} label={t.nav.categories} active={pathname.startsWith('/categories')} collapsed={!sidebarOpen} />
           <NavLink href="/inventory" icon={<BarChart3 className="w-4 h-4" />} label={t.nav.inventory} active={pathname.startsWith('/inventory')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/users" icon={<Users className="w-4 h-4" />} label={t.nav.customers} active={pathname.startsWith('/users')} collapsed={!sidebarOpen} />
+          <NavLink href="/customers" icon={<Users className="w-4 h-4" />} label={t.nav.customers} active={pathname.startsWith('/customers')} collapsed={!sidebarOpen} />
           <NavLink href="/customer-groups" icon={<UsersRound className="w-4 h-4" />} label={t.nav.customerGroups} active={pathname.startsWith('/customer-groups')} collapsed={!sidebarOpen} />
+          <div className="h-px bg-ui-border-base my-2"></div>
           <NavLink href="/admin-users" icon={<User className="w-4 h-4 text-purple-600" />} label={t.nav.adminUsers} active={pathname.startsWith('/admin-users')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
           <NavLink href="/promotions" icon={<Tag className="w-4 h-4" />} label={t.nav.promotions} active={pathname.startsWith('/promotions')} collapsed={!sidebarOpen} />

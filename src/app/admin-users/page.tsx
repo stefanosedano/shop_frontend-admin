@@ -189,9 +189,9 @@ export default function AdminUsersPage() {
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-2">
               <Shield className="w-8 h-8 text-blue-600" />
-              Admin Users Management
+              {t.adminUsers.title}
             </h1>
-            <p className="text-gray-600 mt-1">Manage admin and data entry users</p>
+            <p className="text-gray-600 mt-1">{t.adminUsers.subtitle}</p>
           </div>
           <button
             onClick={() => {
@@ -202,7 +202,7 @@ export default function AdminUsersPage() {
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <UserPlus className="w-5 h-5" />
-            Create User
+            {t.adminUsers.createUser}
           </button>
         </div>
 
@@ -212,22 +212,22 @@ export default function AdminUsersPage() {
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
+                    {t.adminUsers.user}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    {t.users.email}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Role
+                    {t.adminUsers.role}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
+                    {t.common.status}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Created
+                    {t.users.createdAt}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
+                    {t.common.actions}
                   </th>
                 </tr>
               </thead>
@@ -256,7 +256,7 @@ export default function AdminUsersPage() {
                           ? 'bg-purple-100 text-purple-800' 
                           : 'bg-blue-100 text-blue-800'
                       }`}>
-                        {user.role === 'admin' ? 'Admin' : 'Data Entry'}
+                        {user.role === 'admin' ? t.adminUsers.roleAdmin : t.adminUsers.roleDataEntry}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -268,7 +268,7 @@ export default function AdminUsersPage() {
                             : 'bg-red-100 text-red-800 hover:bg-red-200'
                         } transition-colors cursor-pointer`}
                       >
-                        {user.is_active ? 'Active' : 'Inactive'}
+                        {user.is_active ? t.common.active : t.common.inactive}
                       </button>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -314,7 +314,7 @@ export default function AdminUsersPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">
-                  {editingUser ? 'Edit User' : 'Create New User'}
+                  {editingUser ? t.adminUsers.editUser : t.adminUsers.createUser}
                 </h2>
                 <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
                   <X className="w-6 h-6" />
@@ -324,7 +324,7 @@ export default function AdminUsersPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
+                    {t.users.email} *
                   </label>
                   <input
                     type="email"
@@ -338,7 +338,7 @@ export default function AdminUsersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Full Name *
+                    {t.adminUsers.name} *
                   </label>
                   <input
                     type="text"
@@ -351,7 +351,7 @@ export default function AdminUsersPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password {editingUser ? '(leave blank to keep current)' : '*'}
+                    {t.auth.password} {editingUser ? `(${t.adminUsers.passwordPlaceholder})` : '*'}
                   </label>
                   <input
                     type="password"
@@ -362,13 +362,13 @@ export default function AdminUsersPage() {
                     minLength={6}
                   />
                   {!editingUser && (
-                    <p className="text-xs text-gray-500 mt-1">Minimum 6 characters</p>
+                    <p className="text-xs text-gray-500 mt-1">{t.adminUsers.passwordHint}</p>
                   )}
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Role *
+                    {t.adminUsers.role} *
                   </label>
                   <select
                     required
@@ -376,8 +376,8 @@ export default function AdminUsersPage() {
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'data_entry' })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="data_entry">Data Entry - Can create products (requires approval)</option>
-                    <option value="admin">Admin - Full access to all features</option>
+                    <option value="data_entry">{t.adminUsers.roleDataEntry} - {t.adminUsers.roleDataEntryDesc}</option>
+                    <option value="admin">{t.adminUsers.roleAdmin} - {t.adminUsers.roleAdminDesc}</option>
                   </select>
                 </div>
 
