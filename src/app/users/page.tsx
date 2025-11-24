@@ -184,7 +184,8 @@ export default function UsersPage() {
 
   const handleDeactivate = async (userId: number, currentStatus: boolean) => {
     const action = currentStatus ? 'deactivate' : 'activate'
-    if (!confirm(`Are you sure you want to ${action} this user?`)) return
+    const confirmMsg = currentStatus ? t.users.deactivateConfirm : t.users.activateConfirm
+    if (!confirm(confirmMsg)) return
 
     try {
       const token = localStorage.getItem('admin_token')
@@ -194,10 +195,10 @@ export default function UsersPage() {
         { headers: { Authorization: `Bearer ${token}` } }
       )
       await checkAuthAndLoadUsers()
-      alert(`User ${action}d successfully`)
+      alert(currentStatus ? t.users.deactivatedSuccess : t.users.activatedSuccess)
     } catch (error) {
       console.error('Error updating user status:', error)
-      alert(`Failed to ${action} user`)
+      alert(currentStatus ? t.users.deactivateError : t.users.activateError)
     }
   }
 
@@ -205,7 +206,7 @@ export default function UsersPage() {
     e.preventDefault()
 
     if (!formData.email.trim()) {
-      alert('Email is required')
+      alert(t.users.emailRequired)
       return
     }
 
@@ -220,10 +221,10 @@ export default function UsersPage() {
       setShowModal(false)
       setFormData({ email: '', full_name: '', is_admin: false })
       await checkAuthAndLoadUsers()
-      alert('User updated successfully')
+      alert(t.users.updatedSuccess)
     } catch (error) {
       console.error('Error updating user:', error)
-      alert('Failed to update user')
+      alert(t.users.updateError)
     }
   }
 
@@ -269,7 +270,7 @@ export default function UsersPage() {
     <AdminLayout>
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-lg font-medium text-gray-900">Customers</h1>
+          <h1 className="text-lg font-medium text-gray-900">{t.users.title}</h1>
         </div>
 
         <div className="card">
@@ -278,7 +279,7 @@ export default function UsersPage() {
               <tr>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">ID</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.userId}</span>
                     <button onClick={() => handleSort('id')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="id" />
                     </button>
@@ -287,7 +288,7 @@ export default function UsersPage() {
                     id="filter-user-id"
                     name="filter-user-id"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.id}
                     onChange={(e) => handleFilterChange('id', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -295,7 +296,7 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">Email</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.email}</span>
                     <button onClick={() => handleSort('email')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="email" />
                     </button>
@@ -304,7 +305,7 @@ export default function UsersPage() {
                     id="filter-user-email"
                     name="filter-user-email"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.email}
                     onChange={(e) => handleFilterChange('email', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -312,7 +313,7 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">Full Name</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.fullName}</span>
                     <button onClick={() => handleSort('full_name')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="full_name" />
                     </button>
@@ -321,7 +322,7 @@ export default function UsersPage() {
                     id="filter-user-full-name"
                     name="filter-user-full-name"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.full_name}
                     onChange={(e) => handleFilterChange('full_name', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -329,7 +330,7 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">Admin</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.admin}</span>
                     <button onClick={() => handleSort('is_admin')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="is_admin" />
                     </button>
@@ -338,7 +339,7 @@ export default function UsersPage() {
                     id="filter-user-admin"
                     name="filter-user-admin"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.admin}
                     onChange={(e) => handleFilterChange('admin', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -346,7 +347,7 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">Active</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.active}</span>
                     <button onClick={() => handleSort('is_active')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="is_active" />
                     </button>
@@ -355,7 +356,7 @@ export default function UsersPage() {
                     id="filter-user-active"
                     name="filter-user-active"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.active}
                     onChange={(e) => handleFilterChange('active', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -363,7 +364,7 @@ export default function UsersPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 tracking-wide">Created</span>
+                    <span className="text-xs font-medium text-gray-500 tracking-wide">{t.users.createdAt}</span>
                     <button onClick={() => handleSort('created_at')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="created_at" />
                     </button>
@@ -372,14 +373,14 @@ export default function UsersPage() {
                     id="filter-user-created"
                     name="filter-user-created"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.users.filterPlaceholder}
                     value={filters.created}
                     onChange={(e) => handleFilterChange('created', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </th>
                 <th className="px-6 py-3">
-                  <span className="text-xs font-medium text-gray-500 tracking-wide">Actions</span>
+                  <span className="text-xs font-medium text-gray-500 tracking-wide">{t.common.actions}</span>
                 </th>
               </tr>
             </thead>
@@ -388,15 +389,15 @@ export default function UsersPage() {
                 <tr key={`user-${user.id}-${index}`}>
                   <td>{user.id}</td>
                   <td className="font-medium">{user.email}</td>
-                  <td>{user.full_name || 'N/A'}</td>
+                  <td>{user.full_name || t.users.na}</td>
                   <td>
                     <span className={`badge ${user.is_admin ? 'badge-success' : 'badge-neutral'}`}>
-                      {user.is_admin ? 'Yes' : 'No'}
+                      {user.is_admin ? t.users.yes : t.users.no}
                     </span>
                   </td>
                   <td>
                     <span className={`badge ${user.is_active ? 'badge-success' : 'badge-error'}`}>
-                      {user.is_active ? 'Active' : 'Inactive'}
+                      {user.is_active ? t.users.active : t.users.inactive}
                     </span>
                   </td>
                   <td>{new Date(user.created_at).toLocaleDateString()}</td>
@@ -405,13 +406,13 @@ export default function UsersPage() {
                       onClick={() => handleEdit(user)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
-                      Edit
+                      {t.common.edit}
                     </button>
                     <button
                       onClick={() => handleDeactivate(user.id, user.is_active)}
                       className={`${user.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}`}
                     >
-                      {user.is_active ? 'Deactivate' : 'Activate'}
+                      {user.is_active ? t.users.deactivate : t.users.activate}
                     </button>
                   </td>
                 </tr>
@@ -421,12 +422,12 @@ export default function UsersPage() {
           {loadingMore && (
             <div className="flex items-center justify-center py-4">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-              <span className="ml-2 text-sm text-gray-500">Loading more users...</span>
+              <span className="ml-2 text-sm text-gray-500">{t.users.loadingMore}</span>
             </div>
           )}
           {!hasMore && users.length > 0 && (
             <div className="flex items-center justify-center py-4 text-sm text-gray-500">
-              All users loaded
+              {t.users.allLoaded}
             </div>
           )}
         </div>
@@ -436,7 +437,7 @@ export default function UsersPage() {
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
               <div className="p-6">
                 <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-xl font-bold">Edit User</h2>
+                  <h2 className="text-xl font-bold">{t.users.editUser}</h2>
                   <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -447,7 +448,7 @@ export default function UsersPage() {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email *
+                      {t.users.email} *
                     </label>
                     <input
                       type="email"
@@ -460,7 +461,7 @@ export default function UsersPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Full Name
+                      {t.users.fullName}
                     </label>
                     <input
                       type="text"
@@ -479,7 +480,7 @@ export default function UsersPage() {
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                     />
                     <label htmlFor="is_admin" className="ml-2 text-sm font-medium text-gray-700">
-                      Admin User
+                      {t.users.adminUser}
                     </label>
                   </div>
 
@@ -488,14 +489,14 @@ export default function UsersPage() {
                       type="submit"
                       className="btn-primary"
                     >
-                      Update User
+                      {t.users.updateUser}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowModal(false)}
                       className="btn-secondary"
                     >
-                      Cancel
+                      {t.common.cancel}
                     </button>
                   </div>
                 </form>
