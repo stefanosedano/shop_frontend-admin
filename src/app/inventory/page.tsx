@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function InventoryPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [inventory, setInventory] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -52,12 +54,12 @@ export default function InventoryPage() {
     e.preventDefault()
 
     if (adjustment.quantity <= 0) {
-      alert('Quantity must be greater than 0')
+      alert(t.inventory.quantityRequired)
       return
     }
 
     if (!adjustment.reason.trim()) {
-      alert('Reason is required')
+      alert(t.inventory.reasonRequired)
       return
     }
 
@@ -75,12 +77,12 @@ export default function InventoryPage() {
           : item
       ))
 
-      alert(`Inventory ${adjustment.type === 'add' ? 'increased' : 'decreased'} successfully`)
+      alert(t.inventory.adjustedSuccess)
       setShowModal(false)
       setSelectedItem(null)
     } catch (error) {
       console.error('Error adjusting inventory:', error)
-      alert('Failed to adjust inventory')
+      alert(t.inventory.adjustedError)
     }
   }
 
@@ -99,8 +101,8 @@ export default function InventoryPage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-ui-fg-base">Inventory</h1>
-            <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage stock levels and locations</p>
+            <h1 className="text-2xl font-semibold text-ui-fg-base">{t.inventory.title}</h1>
+            <p className="text-ui-fg-muted mt-1 txt-compact-medium">{t.inventory.subtitle}</p>
           </div>
         </div>
 
@@ -109,12 +111,12 @@ export default function InventoryPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>SKU</th>
-                  <th>Product</th>
-                  <th>Available</th>
-                  <th>Reserved</th>
-                  <th>Location</th>
-                  <th>Actions</th>
+                  <th>{t.inventory.sku}</th>
+                  <th>{t.inventory.product}</th>
+                  <th>{t.inventory.available}</th>
+                  <th>{t.inventory.reserved}</th>
+                  <th>{t.inventory.location}</th>
+                  <th>{t.common.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,7 +132,7 @@ export default function InventoryPage() {
                     <td className="text-ui-fg-muted">{item.reserved}</td>
                     <td className="text-ui-fg-muted">{item.location}</td>
                     <td>
-                      <button onClick={() => handleAdjustInventory(item)} className="btn-ghost txt-compact-small">Adjust</button>
+                      <button onClick={() => handleAdjustInventory(item)} className="btn-ghost txt-compact-small">{t.inventory.adjust}</button>
                     </td>
                   </tr>
                 ))}
@@ -143,26 +145,26 @@ export default function InventoryPage() {
         {showModal && selectedItem && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Adjust Inventory</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.inventory.adjustInventory}</h3>
               <div className="mb-4">
-                <p className="text-sm text-ui-fg-muted">Product: <span className="font-medium text-ui-fg-base">{selectedItem.name}</span></p>
-                <p className="text-sm text-ui-fg-muted">SKU: <span className="font-medium text-ui-fg-base">{selectedItem.sku}</span></p>
-                <p className="text-sm text-ui-fg-muted">Current Quantity: <span className="font-medium text-ui-fg-base">{selectedItem.quantity}</span></p>
+                <p className="text-sm text-ui-fg-muted">{t.inventory.product}: <span className="font-medium text-ui-fg-base">{selectedItem.name}</span></p>
+                <p className="text-sm text-ui-fg-muted">{t.inventory.sku}: <span className="font-medium text-ui-fg-base">{selectedItem.sku}</span></p>
+                <p className="text-sm text-ui-fg-muted">{t.inventory.currentQuantity}: <span className="font-medium text-ui-fg-base">{selectedItem.quantity}</span></p>
               </div>
               <form onSubmit={handleSubmitAdjustment} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Adjustment Type</label>
+                  <label className="block text-sm font-medium mb-1">{t.inventory.adjustmentType}</label>
                   <select
                     value={adjustment.type}
                     onChange={(e) => setAdjustment({ ...adjustment, type: e.target.value })}
                     className="input w-full"
                   >
-                    <option value="add">Add Stock</option>
-                    <option value="remove">Remove Stock</option>
+                    <option value="add">{t.inventory.addStock}</option>
+                    <option value="remove">{t.inventory.removeStock}</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Quantity *</label>
+                  <label className="block text-sm font-medium mb-1">{t.inventory.quantity} *</label>
                   <input
                     type="number"
                     min="1"
@@ -173,19 +175,19 @@ export default function InventoryPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Reason *</label>
+                  <label className="block text-sm font-medium mb-1">{t.inventory.reason} *</label>
                   <textarea
                     value={adjustment.reason}
                     onChange={(e) => setAdjustment({ ...adjustment, reason: e.target.value })}
                     className="input w-full"
                     rows={3}
-                    placeholder="e.g., Stock receipt, Damaged goods, etc."
+                    placeholder={t.inventory.reasonPlaceholder}
                     required
                   />
                 </div>
                 <div className="p-3 bg-ui-bg-subtle rounded">
                   <p className="text-sm">
-                    New Quantity: <span className="font-semibold">
+                    {t.inventory.newQuantity}: <span className="font-semibold">
                       {adjustment.type === 'add' 
                         ? selectedItem.quantity + adjustment.quantity
                         : Math.max(0, selectedItem.quantity - adjustment.quantity)
@@ -199,10 +201,10 @@ export default function InventoryPage() {
                     onClick={() => setShowModal(false)}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                   <button type="submit" className="btn-primary">
-                    Confirm Adjustment
+                    {t.inventory.confirmAdjustment}
                   </button>
                 </div>
               </form>
