@@ -49,9 +49,11 @@ export default function SettingsPage() {
   const [translationStatus, setTranslationStatus] = useState<TranslationStatus | null>(null)
   const [translating, setTranslating] = useState(false)
   const [useAI, setUseAI] = useState(true)
+  const [skipExisting, setSkipExisting] = useState(true)
 
   useEffect(() => {
     checkAuthAndLoadSettings()
+    checkTranslationStatus() // Check status on page load
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -152,6 +154,8 @@ export default function SettingsPage() {
   const checkTranslationStatus = async () => {
     try {
       const token = localStorage.getItem('admin_token')
+      if (!token) return // Don't check if not authenticated
+      
       const response = await axios.get(
         `${API_URL}/admin/translations/translate/status`,
         { headers: { Authorization: `Bearer ${token}` } }
@@ -160,8 +164,13 @@ export default function SettingsPage() {
       const status = response.data as TranslationStatus
       setTranslationStatus(status)
       
+      // Start polling if translation is running
+      if (status.running && !translating) {
+        setTranslating(true)
+      }
+      
       // Stop polling if translation is complete
-      if (!status.running) {
+      if (!status.running && translating) {
         setTranslating(false)
       }
     } catch (error) {
@@ -188,7 +197,7 @@ export default function SettingsPage() {
       
       await axios.post(
         `${API_URL}/admin/translations/translate/all${itemLimit ? `?limit=${itemLimit}` : ''}`,
-        { use_ai: useAI },
+        { use_ai: useAI, skip_existing: skipExisting },
         { headers: { Authorization: `Bearer ${token}` } }
       )
       
@@ -317,9 +326,30 @@ export default function SettingsPage() {
                   Use AI Translation (OpenAI) - Better quality but slower and requires API key
                 </label>
               </div>
+              
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="skipExisting"
+                  checked={skipExisting}
+                  onChange={(e) => setSkipExisting(e.target.checked)}
+                  disabled={translating}
+                  className="h-4 w-4 rounded border-ui-border-base text-ui-fg-interactive focus:ring-2 focus:ring-ui-border-interactive"
+                />
+                <label htmlFor="skipExisting" className="ml-2 text-sm text-ui-fg-base">
+                  Skip already translated items - Only translate new/untranslated content
+                </label>
+              </div>
+              
               {!useAI && (
                 <div className="bg-ui-bg-subtle p-3 rounded-lg text-xs text-ui-fg-subtle">
                   Simple translation uses basic word replacement. Results may vary in quality.
+                </div>
+              )}
+              
+              {!skipExisting && (
+                <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg text-xs text-yellow-800">
+                  ⚠️ Warning: Re-translating all items will overwrite existing translations and use more API credits.
                 </div>
               )}
             </div>
