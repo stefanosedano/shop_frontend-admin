@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminLayout from '../../components/AdminLayout';
+import { useLanguage } from '../../context/LanguageContext';
 
 interface CustomerGroup {
   id: number;
@@ -36,6 +37,7 @@ interface Stats {
 
 export default function CustomerGroupsAdminPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<'groups' | 'segments'>('groups');
   const [groups, setGroups] = useState<CustomerGroup[]>([]);
   const [segments, setSegments] = useState<CustomerSegment[]>([]);
@@ -173,19 +175,19 @@ export default function CustomerGroupsAdminPage() {
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-medium text-gray-900">Customer Groups</h1>
+            <h1 className="text-lg font-medium text-gray-900">{t.customerGroups.title}</h1>
             <div className="flex gap-2">
               <Link
                 href="/customer-groups/create-group"
                 className="btn-primary"
               >
-                + New Group
+                {t.customerGroups.createGroup}
               </Link>
               <Link
                 href="/customer-groups/create-segment"
                 className="btn-secondary"
               >
-                + New Segment
+                {t.customerGroups.createSegment}
               </Link>
             </div>
           </div>
@@ -196,25 +198,25 @@ export default function CustomerGroupsAdminPage() {
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-6">
             <div className="bg-white overflow-hidden rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Groups</dt>
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customerGroups.totalGroups}</dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.total_groups}</dd>
               </div>
             </div>
             <div className="bg-white overflow-hidden rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Segments</dt>
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customerGroups.totalSegments}</dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.total_segments}</dd>
               </div>
             </div>
             <div className="bg-white overflow-hidden rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">In Groups</dt>
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customerGroups.inGroups}</dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.total_customers_in_groups}</dd>
               </div>
             </div>
             <div className="bg-white overflow-hidden rounded-lg border border-gray-200 hover:shadow-md transition-shadow">
               <div className="px-4 py-5 sm:p-6">
-                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">In Segments</dt>
+                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.customerGroups.inSegments}</dt>
                 <dd className="mt-1 text-3xl font-semibold text-gray-900">{stats.total_customers_in_segments}</dd>
               </div>
             </div>

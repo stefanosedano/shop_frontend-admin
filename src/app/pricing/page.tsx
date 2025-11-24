@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function PricingPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [priceLists, setPriceLists] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -90,7 +92,7 @@ export default function PricingPage() {
             <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage price lists and customer-specific pricing</p>
           </div>
           <button onClick={handleCreate} className="btn-primary">
-            Create Price List
+            {t.pricing.addPriceList}
           </button>
         </div>
 
@@ -131,7 +133,7 @@ export default function PricingPage() {
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold mb-4">Create Price List</h3>
+              <h3 className="text-lg font-semibold mb-4">{t.pricing.addPriceList}</h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">Name *</label>

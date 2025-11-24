@@ -4,6 +4,8 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState, useRef, useEffect } from 'react'
+import { useLanguage } from '../context/LanguageContext'
+import LanguageSwitcher from './LanguageSwitcher'
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -33,6 +35,7 @@ import {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const { t } = useLanguage()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
@@ -75,31 +78,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          <NavLink href="/" icon={<LayoutDashboard className="w-4 h-4" />} label="Dashboard" active={pathname === '/'} collapsed={!sidebarOpen} />
+          <NavLink href="/" icon={<LayoutDashboard className="w-4 h-4" />} label={t.nav.dashboard} active={pathname === '/'} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/orders" icon={<ShoppingCart className="w-4 h-4" />} label="Orders" active={pathname.startsWith('/orders')} collapsed={!sidebarOpen} />
-          <NavLink href="/products" icon={<Package className="w-4 h-4" />} label="Products" active={pathname.startsWith('/products')} collapsed={!sidebarOpen} />
-          <NavLink href="/collections" icon={<FolderKanban className="w-4 h-4" />} label="Collections" active={pathname.startsWith('/collections')} collapsed={!sidebarOpen} />
-          <NavLink href="/categories" icon={<FolderTree className="w-4 h-4" />} label="Categories" active={pathname.startsWith('/categories')} collapsed={!sidebarOpen} />
-          <NavLink href="/inventory" icon={<BarChart3 className="w-4 h-4" />} label="Inventory" active={pathname.startsWith('/inventory')} collapsed={!sidebarOpen} />
+          <NavLink href="/orders" icon={<ShoppingCart className="w-4 h-4" />} label={t.nav.orders} active={pathname.startsWith('/orders')} collapsed={!sidebarOpen} />
+          <NavLink href="/products" icon={<Package className="w-4 h-4" />} label={t.nav.products} active={pathname.startsWith('/products')} collapsed={!sidebarOpen} />
+          <NavLink href="/collections" icon={<FolderKanban className="w-4 h-4" />} label={t.nav.collections} active={pathname.startsWith('/collections')} collapsed={!sidebarOpen} />
+          <NavLink href="/categories" icon={<FolderTree className="w-4 h-4" />} label={t.nav.categories} active={pathname.startsWith('/categories')} collapsed={!sidebarOpen} />
+          <NavLink href="/inventory" icon={<BarChart3 className="w-4 h-4" />} label={t.nav.inventory} active={pathname.startsWith('/inventory')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/users" icon={<Users className="w-4 h-4" />} label="Customers" active={pathname.startsWith('/users')} collapsed={!sidebarOpen} />
-          <NavLink href="/customer-groups" icon={<UsersRound className="w-4 h-4" />} label="Customer Groups" active={pathname.startsWith('/customer-groups')} collapsed={!sidebarOpen} />
+          <NavLink href="/users" icon={<Users className="w-4 h-4" />} label={t.nav.customers} active={pathname.startsWith('/users')} collapsed={!sidebarOpen} />
+          <NavLink href="/customer-groups" icon={<UsersRound className="w-4 h-4" />} label={t.nav.customerGroups} active={pathname.startsWith('/customer-groups')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/promotions" icon={<Tag className="w-4 h-4" />} label="Promotions" active={pathname.startsWith('/promotions')} collapsed={!sidebarOpen} />
-          <NavLink href="/gift-cards" icon={<Gift className="w-4 h-4" />} label="Gift Cards" active={pathname.startsWith('/gift-cards')} collapsed={!sidebarOpen} />
-          <NavLink href="/pricing" icon={<DollarSign className="w-4 h-4" />} label="Pricing" active={pathname.startsWith('/pricing')} collapsed={!sidebarOpen} />
+          <NavLink href="/promotions" icon={<Tag className="w-4 h-4" />} label={t.nav.promotions} active={pathname.startsWith('/promotions')} collapsed={!sidebarOpen} />
+          <NavLink href="/gift-cards" icon={<Gift className="w-4 h-4" />} label={t.nav.giftCards} active={pathname.startsWith('/gift-cards')} collapsed={!sidebarOpen} />
+          <NavLink href="/pricing" icon={<DollarSign className="w-4 h-4" />} label={t.nav.pricing} active={pathname.startsWith('/pricing')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/regions" icon={<Globe className="w-4 h-4" />} label="Regions" active={pathname.startsWith('/regions')} collapsed={!sidebarOpen} />
-          <NavLink href="/shipping" icon={<Truck className="w-4 h-4" />} label="Shipping" active={pathname.startsWith('/shipping')} collapsed={!sidebarOpen} />
-          <NavLink href="/sales-channels" icon={<Radio className="w-4 h-4" />} label="Sales Channels" active={pathname.startsWith('/sales-channels')} collapsed={!sidebarOpen} />
-          <NavLink href="/taxes" icon={<Receipt className="w-4 h-4" />} label="Taxes" active={pathname.startsWith('/taxes')} collapsed={!sidebarOpen} />
+          <NavLink href="/regions" icon={<Globe className="w-4 h-4" />} label={t.nav.regions} active={pathname.startsWith('/regions')} collapsed={!sidebarOpen} />
+          <NavLink href="/shipping" icon={<Truck className="w-4 h-4" />} label={t.nav.shipping} active={pathname.startsWith('/shipping')} collapsed={!sidebarOpen} />
+          <NavLink href="/sales-channels" icon={<Radio className="w-4 h-4" />} label={t.nav.salesChannels} active={pathname.startsWith('/sales-channels')} collapsed={!sidebarOpen} />
+          <NavLink href="/taxes" icon={<Receipt className="w-4 h-4" />} label={t.nav.taxes} active={pathname.startsWith('/taxes')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
-          <NavLink href="/payments" icon={<CreditCard className="w-4 h-4" />} label="Payments" active={pathname.startsWith('/payments')} collapsed={!sidebarOpen} />
-          <NavLink href="/api-keys" icon={<Key className="w-4 h-4" />} label="API Keys" active={pathname.startsWith('/api-keys')} collapsed={!sidebarOpen} />
+          <NavLink href="/payments" icon={<CreditCard className="w-4 h-4" />} label={t.nav.payments} active={pathname.startsWith('/payments')} collapsed={!sidebarOpen} />
+          <NavLink href="/api-keys" icon={<Key className="w-4 h-4" />} label={t.nav.apiKeys} active={pathname.startsWith('/api-keys')} collapsed={!sidebarOpen} />
           
           <div className="pt-4 mt-4 border-t border-ui-border-base">
-            <NavLink href="/settings" icon={<Settings className="w-4 h-4" />} label="Settings" active={pathname.startsWith('/settings')} collapsed={!sidebarOpen} />
+            <NavLink href="/settings" icon={<Settings className="w-4 h-4" />} label={t.nav.settings} active={pathname.startsWith('/settings')} collapsed={!sidebarOpen} />
           </div>
         </nav>
 
@@ -125,6 +128,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
             <input
+              id="admin-global-search"
+              name="admin-global-search"
               type="text"
               placeholder="Search orders, products, customers..."
               className="w-96 px-4 py-2 border border-ui-border-base rounded-lg bg-ui-bg-component text-sm
@@ -133,6 +138,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             />
           </div>
           <div className="flex items-center space-x-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             <button className="p-2 text-ui-fg-subtle hover:text-ui-fg-base relative transition-fg rounded-lg hover:bg-ui-bg-hover">
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -170,7 +178,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <Settings className="w-4 h-4" />
-                    <span>Settings</span>
+                    <span>{t.nav.settings}</span>
                   </Link>
                   <div className="h-px bg-ui-border-base my-1"></div>
                   <button
@@ -181,7 +189,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-fg"
                   >
                     <LogOut className="w-4 h-4" />
-                    <span>Logout</span>
+                    <span>{t.nav.logout}</span>
                   </button>
                 </div>
               )}

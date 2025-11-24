@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
@@ -13,12 +14,17 @@ type SortDirection = 'asc' | 'desc' | null
 
 export default function UsersPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingUser, setEditingUser] = useState<any>(null)
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [filters, setFilters] = useState({
     id: '',
     email: '',
@@ -38,26 +44,133 @@ export default function UsersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const checkAuthAndLoadUsers = async () => {
+  // Debounced filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      setUsers([])
+      checkAuthAndLoadUsers(true)
+    }, 500)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortField, sortDirection])
+
+  const buildQueryString = () => {
+    const params = new URLSearchParams()
+    
+    if (filters.id) params.append('id', filters.id)
+    if (filters.email) params.append('email', filters.email)
+    if (filters.full_name) params.append('full_name', filters.full_name)
+    if (filters.admin) params.append('admin', filters.admin)
+    if (filters.active) params.append('active', filters.active)
+    if (filters.created) params.append('created', filters.created)
+    if (sortField) {
+      params.append('sort', sortField)
+      if (sortDirection) params.append('order', sortDirection)
+    }
+    
+    return params.toString()
+  }
+
+  const checkAuthAndLoadUsers = async (resetPage = false) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
       router.push('/login')
       return
     }
 
+    if (resetPage) {
+      setLoading(true)
+    }
+
     try {
-      const response = await axios.get(`${API_URL}/admin/users`, {
+      const currentPage = resetPage ? 1 : page
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/users${queryString ? '?' + queryString : ''}`
+      
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setUsers(response.data)
+      const data = Array.isArray(response.data) ? response.data : response.data.users || response.data.data || []
+      
+      if (resetPage) {
+        setUsers(data)
+        setPage(1)
+      } else {
+        setUsers(data)
+      }
+      setHasMore(data.length >= 50)
     } catch (error) {
       console.error('Error loading users:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/login')
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('admin_token')
+        router.push('/login')
+      }
     } finally {
       setLoading(false)
     }
   }
+
+  const loadMoreUsers = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+
+    const token = localStorage.getItem('admin_token')
+    if (!token) return
+
+    setLoadingMore(true)
+    try {
+      const nextPage = page + 1
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/users${queryString ? '?' + queryString + '&' : '?'}page=${nextPage}`
+      
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = Array.isArray(response.data) ? response.data : response.data.users || response.data.data || []
+      
+      if (data.length > 0) {
+        setUsers(prev => {
+          // Deduplicate by ID
+          const existingIds = new Set(prev.map(u => u.id))
+          const newUsers = data.filter(u => !existingIds.has(u.id))
+          return [...prev, ...newUsers]
+        })
+        setPage(nextPage)
+        setHasMore(data.length >= 50)
+      } else {
+        setHasMore(false)
+      }
+    } catch (error) {
+      console.error('Error loading more users:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [loadingMore, hasMore, page, filters, sortField, sortDirection])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading || loadingMore || !hasMore) return
+
+      // Find the scrollable main element
+      const mainElement = document.querySelector('main')
+      if (!mainElement) return
+
+      const scrollPosition = mainElement.scrollTop + mainElement.clientHeight
+      const scrollHeight = mainElement.scrollHeight
+      
+      // Load more when within 300px of the bottom
+      if (scrollPosition >= scrollHeight - 300) {
+        loadMoreUsers()
+      }
+    }
+
+    const mainElement = document.querySelector('main')
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll)
+      return () => mainElement.removeEventListener('scroll', handleScroll)
+    }
+  }, [loading, loadingMore, hasMore, loadMoreUsers])
 
   const handleEdit = (user: any) => {
     setEditingUser(user)
@@ -132,68 +245,6 @@ export default function UsersPage() {
     setFilters(prev => ({ ...prev, [column]: value }))
   }
 
-  const filteredAndSortedUsers = useMemo(() => {
-    let filtered = [...users]
-
-    if (filters.id) {
-      filtered = filtered.filter(u => u.id.toString().includes(filters.id))
-    }
-    if (filters.email) {
-      filtered = filtered.filter(u => u.email.toLowerCase().includes(filters.email.toLowerCase()))
-    }
-    if (filters.full_name) {
-      filtered = filtered.filter(u => (u.full_name || '').toLowerCase().includes(filters.full_name.toLowerCase()))
-    }
-    if (filters.admin) {
-      const searchYes = filters.admin.toLowerCase().includes('yes')
-      const searchNo = filters.admin.toLowerCase().includes('no')
-      filtered = filtered.filter(u => {
-        if (searchYes && u.is_admin) return true
-        if (searchNo && !u.is_admin) return true
-        return false
-      })
-    }
-    if (filters.active) {
-      const searchActive = filters.active.toLowerCase().includes('active')
-      const searchInactive = filters.active.toLowerCase().includes('inactive')
-      filtered = filtered.filter(u => {
-        if (searchActive && u.is_active) return true
-        if (searchInactive && !u.is_active) return true
-        return false
-      })
-    }
-    if (filters.created) {
-      filtered = filtered.filter(u => new Date(u.created_at).toLocaleDateString().includes(filters.created))
-    }
-
-    if (sortField && sortDirection) {
-      filtered.sort((a, b) => {
-        let aVal = a[sortField]
-        let bVal = b[sortField]
-
-        if (sortField === 'created_at') {
-          aVal = new Date(aVal).getTime()
-          bVal = new Date(bVal).getTime()
-        } else if (sortField === 'is_admin' || sortField === 'is_active') {
-          aVal = aVal ? 1 : 0
-          bVal = bVal ? 1 : 0
-        } else if (sortField === 'full_name') {
-          aVal = (aVal || '').toLowerCase()
-          bVal = (bVal || '').toLowerCase()
-        } else if (typeof aVal === 'string') {
-          aVal = aVal.toLowerCase()
-          bVal = bVal.toLowerCase()
-        }
-
-        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1
-        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1
-        return 0
-      })
-    }
-
-    return filtered
-  }, [users, filters, sortField, sortDirection])
-
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return <ArrowUpDown className="w-4 h-4 text-gray-400" />
@@ -233,6 +284,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-id"
+                    name="filter-user-id"
                     type="text"
                     placeholder="Filter..."
                     value={filters.id}
@@ -248,6 +301,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-email"
+                    name="filter-user-email"
                     type="text"
                     placeholder="Filter..."
                     value={filters.email}
@@ -263,6 +318,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-full-name"
+                    name="filter-user-full-name"
                     type="text"
                     placeholder="Filter..."
                     value={filters.full_name}
@@ -278,6 +335,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-admin"
+                    name="filter-user-admin"
                     type="text"
                     placeholder="Filter..."
                     value={filters.admin}
@@ -293,6 +352,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-active"
+                    name="filter-user-active"
                     type="text"
                     placeholder="Filter..."
                     value={filters.active}
@@ -308,6 +369,8 @@ export default function UsersPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-user-created"
+                    name="filter-user-created"
                     type="text"
                     placeholder="Filter..."
                     value={filters.created}
@@ -321,8 +384,8 @@ export default function UsersPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredAndSortedUsers.map((user) => (
-                <tr key={user.id}>
+              {users.map((user, index) => (
+                <tr key={`user-${user.id}-${index}`}>
                   <td>{user.id}</td>
                   <td className="font-medium">{user.email}</td>
                   <td>{user.full_name || 'N/A'}</td>
@@ -355,6 +418,17 @@ export default function UsersPage() {
               ))}
             </tbody>
           </table>
+          {loadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+              <span className="ml-2 text-sm text-gray-500">Loading more users...</span>
+            </div>
+          )}
+          {!hasMore && users.length > 0 && (
+            <div className="flex items-center justify-center py-4 text-sm text-gray-500">
+              All users loaded
+            </div>
+          )}
         </div>
 
         {showModal && (

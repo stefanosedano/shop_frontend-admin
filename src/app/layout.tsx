@@ -1,10 +1,7 @@
-import type { Metadata } from 'next'
-import './globals.css'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Shop Admin Dashboard',
-  description: 'Administration dashboard for Shop management',
-}
+import './globals.css'
+import { LanguageProvider } from '../context/LanguageContext'
 
 export default function RootLayout({
   children,
@@ -16,8 +13,13 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <title>Shop Admin Dashboard</title>
       </head>
-      <body className="bg-ui-bg-subtle">{children}</body>
+      <body className="bg-ui-bg-subtle">
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   )
 }

@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
@@ -14,17 +15,23 @@ type SortDirection = 'asc' | 'desc' | null
 
 export default function ProductsPage() {
   const router = useRouter()
+  const { t, language } = useLanguage()
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingProduct, setEditingProduct] = useState<any>(null)
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [filters, setFilters] = useState({
     id: '',
     name: '',
     price: '',
     stock: '',
+    sku: '',
     status: ''
   })
   const [formData, setFormData] = useState({
@@ -41,26 +48,148 @@ export default function ProductsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const checkAuthAndLoadProducts = async () => {
+  // Reload products when language changes
+  useEffect(() => {
+    if (products.length > 0) {
+      setPage(1)
+      setProducts([])
+      checkAuthAndLoadProducts(true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language])
+
+  // Debounced filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      setProducts([])
+      checkAuthAndLoadProducts(true)
+    }, 500)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortField, sortDirection])
+
+  const buildQueryString = () => {
+    const params = new URLSearchParams()
+    
+    // Add locale parameter for translations
+    if (language && language !== 'en') {
+      params.append('locale', language)
+    }
+    
+    if (filters.id) params.append('id', filters.id)
+    if (filters.name) params.append('name', filters.name)
+    if (filters.price) params.append('price', filters.price)
+    if (filters.stock) params.append('stock', filters.stock)
+    if (filters.sku) params.append('sku', filters.sku)
+    if (filters.status) params.append('status', filters.status)
+    if (sortField) {
+      params.append('sort', sortField)
+      if (sortDirection) params.append('order', sortDirection)
+    }
+    
+    return params.toString()
+  }
+
+  const checkAuthAndLoadProducts = async (resetPage = false) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
       router.push('/login')
       return
     }
 
+    if (resetPage) {
+      setLoading(true)
+    }
+
     try {
-      const response = await axios.get(`${API_URL}/admin/products`, {
+      const currentPage = resetPage ? 1 : page
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/products${queryString ? '?' + queryString : ''}`
+      
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setProducts(response.data)
+      const data = Array.isArray(response.data) ? response.data : response.data.products || response.data.data || []
+      
+      if (resetPage) {
+        setProducts(data)
+        setPage(1)
+      } else {
+        setProducts(data)
+      }
+      setHasMore(data.length >= 50)
     } catch (error) {
       console.error('Error loading products:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/login')
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('admin_token')
+        router.push('/login')
+      }
     } finally {
       setLoading(false)
     }
   }
+
+  const loadMoreProducts = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+
+    const token = localStorage.getItem('admin_token')
+    if (!token) return
+
+    setLoadingMore(true)
+    try {
+      const nextPage = page + 1
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/products${queryString ? '?' + queryString + '&' : '?'}page=${nextPage}`
+      
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = Array.isArray(response.data) ? response.data : response.data.products || response.data.data || []
+      
+      if (data.length > 0) {
+        setProducts(prev => {
+          // Deduplicate by ID
+          const existingIds = new Set(prev.map(p => p.id))
+          const newProducts = data.filter(p => !existingIds.has(p.id))
+          return [...prev, ...newProducts]
+        })
+        setPage(nextPage)
+        setHasMore(data.length >= 50)
+      } else {
+        setHasMore(false)
+      }
+    } catch (error) {
+      console.error('Error loading more products:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [loadingMore, hasMore, page, filters, sortField, sortDirection])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading || loadingMore || !hasMore) return
+
+      // Find the scrollable main element
+      const mainElement = document.querySelector('main')
+      if (!mainElement) return
+
+      const scrollPosition = mainElement.scrollTop + mainElement.clientHeight
+      const scrollHeight = mainElement.scrollHeight
+      
+      // Load more when within 300px of the bottom
+      if (scrollPosition >= scrollHeight - 300) {
+        loadMoreProducts()
+      }
+    }
+
+    const mainElement = document.querySelector('main')
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll)
+      return () => mainElement.removeEventListener('scroll', handleScroll)
+    }
+  }, [loading, loadingMore, hasMore, loadMoreProducts])
 
   const handleAddNew = () => {
     setEditingProduct(null)
@@ -89,7 +218,7 @@ export default function ProductsPage() {
   }
 
   const handleDelete = async (productId: number) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+    if (!confirm(t.products.deleteConfirm)) return
 
     const token = localStorage.getItem('admin_token')
     try {
@@ -99,7 +228,7 @@ export default function ProductsPage() {
       await checkAuthAndLoadProducts()
     } catch (error) {
       console.error('Error deleting product:', error)
-      alert('Failed to delete product')
+      alert(t.messages.deleteError)
     }
   }
 
@@ -153,50 +282,6 @@ export default function ProductsPage() {
     setFilters(prev => ({ ...prev, [column]: value }))
   }
 
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = [...products]
-
-    if (filters.id) {
-      filtered = filtered.filter(p => p.id.toString().includes(filters.id))
-    }
-    if (filters.name) {
-      filtered = filtered.filter(p => p.name.toLowerCase().includes(filters.name.toLowerCase()))
-    }
-    if (filters.price) {
-      filtered = filtered.filter(p => p.price.toString().includes(filters.price))
-    }
-    if (filters.stock) {
-      filtered = filtered.filter(p => p.stock_quantity.toString().includes(filters.stock))
-    }
-    if (filters.status) {
-      const searchActive = filters.status.toLowerCase().includes('active')
-      const searchInactive = filters.status.toLowerCase().includes('inactive')
-      filtered = filtered.filter(p => {
-        if (searchActive && p.is_active) return true
-        if (searchInactive && !p.is_active) return true
-        return false
-      })
-    }
-
-    if (sortField && sortDirection) {
-      filtered.sort((a, b) => {
-        let aVal = a[sortField]
-        let bVal = b[sortField]
-
-        if (sortField === 'is_active') {
-          aVal = aVal ? 1 : 0
-          bVal = bVal ? 1 : 0
-        }
-
-        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1
-        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1
-        return 0
-      })
-    }
-
-    return filtered
-  }, [products, filters, sortField, sortDirection])
-
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
       return <ArrowUpDown className="w-4 h-4 text-gray-400" />
@@ -207,21 +292,60 @@ export default function ProductsPage() {
     return <ArrowDown className="w-4 h-4 text-blue-600" />
   }
 
+  const handleTranslateAll = async () => {
+    const token = localStorage.getItem('admin_token')
+    if (!token) return
+
+    if (!confirm('This will translate all products to all languages. Continue?')) {
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await axios.post(
+        `${API_URL}/translations/translate/all?use_ai=false`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      
+      alert(`Success! Created ${response.data.summary.total_translations_created} translations, Updated ${response.data.summary.total_translations_updated} translations`)
+      
+      // Reload products to see translated names
+      setProducts([])
+      setPage(1)
+      await checkAuthAndLoadProducts(true)
+    } catch (error) {
+      console.error('Translation error:', error)
+      alert('Error translating products. Check console for details.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (loading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>
+    return <div className="flex items-center justify-center min-h-screen">{t.common.loading}</div>
   }
 
   return (
     <AdminLayout>
       <div className="p-6">
-        <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-lg font-medium text-gray-900">Products</h1>
-          <button 
-            onClick={handleAddNew}
-            className="btn-primary"
-          >
-            + Add Product
-          </button>
+        <div className="mb-6 flex justify-between items-center gap-3">
+          <h1 className="text-lg font-medium text-gray-900">{t.products.title}</h1>
+          <div className="flex gap-2">
+            <button 
+              onClick={handleTranslateAll}
+              className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors text-sm font-medium"
+              title="Translate all products to all languages"
+            >
+              🌐 Translate All
+            </button>
+            <button 
+              onClick={handleAddNew}
+              className="btn-primary"
+            >
+              + {t.products.addProduct}
+            </button>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -236,6 +360,8 @@ export default function ProductsPage() {
                     </button>
                   </div>
                   <input
+                    id="filter-product-id"
+                    name="filter-product-id"
                     type="text"
                     placeholder="Filter..."
                     value={filters.id}
@@ -245,14 +371,16 @@ export default function ProductsPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.products.productName}</span>
                     <button onClick={() => handleSort('name')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="name" />
                     </button>
                   </div>
                   <input
+                    id="filter-product-name"
+                    name="filter-product-name"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.products.filterPlaceholder}
                     value={filters.name}
                     onChange={(e) => handleFilterChange('name', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -260,14 +388,16 @@ export default function ProductsPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Price</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.products.price}</span>
                     <button onClick={() => handleSort('price')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="price" />
                     </button>
                   </div>
                   <input
+                    id="filter-product-price"
+                    name="filter-product-price"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.products.priceFilter}
                     value={filters.price}
                     onChange={(e) => handleFilterChange('price', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -275,14 +405,16 @@ export default function ProductsPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.products.stock}</span>
                     <button onClick={() => handleSort('stock_quantity')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="stock_quantity" />
                     </button>
                   </div>
                   <input
+                    id="filter-product-stock"
+                    name="filter-product-stock"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.products.filterPlaceholder}
                     value={filters.stock}
                     onChange={(e) => handleFilterChange('stock', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -290,27 +422,43 @@ export default function ProductsPage() {
                 </th>
                 <th className="px-6 py-3">
                   <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span>
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.products.sku}</span>
+                  </div>
+                  <input
+                    id="filter-product-sku"
+                    name="filter-product-sku"
+                    type="text"
+                    placeholder={t.products.filterPlaceholder}
+                    value={filters.sku || ''}
+                    onChange={(e) => handleFilterChange('sku', e.target.value)}
+                    className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                </th>
+                <th className="px-6 py-3">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{t.common.status}</span>
                     <button onClick={() => handleSort('is_active')} className="hover:bg-gray-200 rounded p-1">
                       <SortIcon field="is_active" />
                     </button>
                   </div>
                   <input
+                    id="filter-product-status"
+                    name="filter-product-status"
                     type="text"
-                    placeholder="Filter..."
+                    placeholder={t.products.filterPlaceholder}
                     value={filters.status}
                     onChange={(e) => handleFilterChange('status', e.target.value)}
                     className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
+                  {t.common.actions}
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAndSortedProducts.map((product) => (
-                <tr key={product.id}>
+              {products.map((product, index) => (
+                <tr key={`product-${product.id}-${index}`}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.id}
                   </td>
@@ -323,11 +471,14 @@ export default function ProductsPage() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {product.stock_quantity}
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {product.sku || '-'}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
                       product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {product.is_active ? 'Active' : 'Inactive'}
+                      {product.is_active ? t.common.active : t.common.inactive}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -335,19 +486,30 @@ export default function ProductsPage() {
                       onClick={() => handleEdit(product)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
-                      Edit
+                      {t.common.edit}
                     </button>
                     <button 
                       onClick={() => handleDelete(product.id)}
                       className="text-red-600 hover:text-red-900"
                     >
-                      Delete
+                      {t.common.delete}
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+          {loadingMore && (
+            <div className="flex items-center justify-center py-4">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+              <span className="ml-2 text-sm text-gray-500">{t.messages.loadingMore}</span>
+            </div>
+          )}
+          {!hasMore && products.length > 0 && (
+            <div className="flex items-center justify-center py-4 text-sm text-gray-500">
+              {t.products.allProducts}
+            </div>
+          )}
         </div>
 
       {/* Add/Edit Product Modal */}
@@ -357,7 +519,7 @@ export default function ProductsPage() {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold">
-                  {editingProduct ? 'Edit Product' : 'Add New Product'}
+                  {editingProduct ? t.products.editProduct : t.products.addProduct}
                 </h2>
                 <button onClick={() => setShowModal(false)} className="text-gray-500 hover:text-gray-700">
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -369,7 +531,7 @@ export default function ProductsPage() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name *
+                    {t.products.productName} *
                   </label>
                   <input
                     type="text"
@@ -377,19 +539,19 @@ export default function ProductsPage() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter product name"
+                    placeholder={t.products.productName}
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
+                    {t.products.description}
                   </label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter product description"
+                    placeholder={t.products.description}
                     rows={4}
                   />
                 </div>
@@ -397,7 +559,7 @@ export default function ProductsPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Price *
+                      {t.products.price} *
                     </label>
                     <input
                       type="number"
@@ -412,7 +574,7 @@ export default function ProductsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Stock Quantity *
+                      {t.products.stock} *
                     </label>
                     <input
                       type="number"
@@ -427,14 +589,14 @@ export default function ProductsPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SKU
+                    {t.products.sku}
                   </label>
                   <input
                     type="text"
                     value={formData.sku}
                     onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter SKU"
+                    placeholder={t.products.sku}
                   />
                 </div>
 
@@ -447,7 +609,7 @@ export default function ProductsPage() {
                     className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                   />
                   <label htmlFor="is_active" className="ml-2 text-sm font-medium text-gray-700">
-                    Active Product
+                    {t.products.activeProduct}
                   </label>
                 </div>
 
@@ -456,14 +618,14 @@ export default function ProductsPage() {
                     type="submit"
                     className="btn-primary"
                   >
-                    {editingProduct ? 'Update Product' : 'Create Product'}
+                    {editingProduct ? t.products.updateProduct : t.products.createProduct}
                   </button>
                   <button
                     type="button"
                     onClick={() => setShowModal(false)}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                 </div>
               </form>

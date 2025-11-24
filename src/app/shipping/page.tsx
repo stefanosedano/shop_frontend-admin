@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function ShippingPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [shippingOptions, setShippingOptions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -89,7 +91,7 @@ export default function ShippingPage() {
             <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage shipping options and rates</p>
           </div>
           <button onClick={handleAdd} className="btn-primary">
-            Add Shipping Option
+            {t.shipping.addShipping}
           </button>
         </div>
 

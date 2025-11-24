@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminLayout from '@/components/AdminLayout';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface Promotion {
   id: number;
@@ -32,6 +33,7 @@ interface Stats {
 
 export default function PromotionsAdminPage() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);

@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function RegionsPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [regions, setRegions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -89,7 +91,7 @@ export default function RegionsPage() {
             <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage geographic regions and currencies</p>
           </div>
           <button onClick={handleCreate} className="btn-primary">
-            Create Region
+            {t.regions.addRegion}
           </button>
         </div>
 

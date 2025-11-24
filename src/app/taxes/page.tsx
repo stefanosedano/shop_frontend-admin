@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function TaxesPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [taxRates, setTaxRates] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -86,7 +88,7 @@ export default function TaxesPage() {
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-lg font-medium text-gray-900">Taxes</h1>
           <button onClick={handleCreate} className="btn-primary">
-            + Add Tax Rate
+            {t.taxes.addTax}
           </button>
         </div>
 

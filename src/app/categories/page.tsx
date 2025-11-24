@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
 
 export default function CategoriesPage() {
   const router = useRouter()
+  const { t, language } = useLanguage()
   const [categories, setCategories] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -23,7 +25,7 @@ export default function CategoriesPage() {
   useEffect(() => {
     checkAuthAndLoadCategories()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [language])
 
   const checkAuthAndLoadCategories = async () => {
     const token = localStorage.getItem('admin_token')
@@ -34,7 +36,8 @@ export default function CategoriesPage() {
 
     try {
       const response = await axios.get(`${API_URL}/admin/categories`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        params: { locale_code: language }
       })
       setCategories(response.data)
     } catch (error) {
@@ -64,7 +67,7 @@ export default function CategoriesPage() {
   }
 
   const handleDelete = async (categoryId: number) => {
-    if (!confirm('Are you sure you want to delete this category?')) return
+    if (!confirm(t.categories.deleteConfirm)) return
 
     try {
       const token = localStorage.getItem('admin_token')
@@ -72,10 +75,10 @@ export default function CategoriesPage() {
         headers: { Authorization: `Bearer ${token}` }
       })
       await checkAuthAndLoadCategories()
-      alert('Category deleted successfully')
+      alert(t.messages.deleteSuccess)
     } catch (error) {
       console.error('Error deleting category:', error)
-      alert('Failed to delete category')
+      alert(t.messages.deleteError)
     }
   }
 
@@ -83,7 +86,7 @@ export default function CategoriesPage() {
     e.preventDefault()
 
     if (!formData.name.trim() || !formData.slug.trim()) {
-      alert('Name and slug are required')
+      alert(t.categories.nameRequired)
       return
     }
 
@@ -96,14 +99,14 @@ export default function CategoriesPage() {
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        alert('Category updated successfully')
+        alert(t.messages.saveSuccess)
       } else {
         await axios.post(
           `${API_URL}/admin/categories`,
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        alert('Category created successfully')
+        alert(t.messages.saveSuccess)
       }
 
       setShowModal(false)
@@ -111,7 +114,7 @@ export default function CategoriesPage() {
       await checkAuthAndLoadCategories()
     } catch (error) {
       console.error('Error saving category:', error)
-      alert('Failed to save category')
+      alert(t.messages.saveError)
     }
   }
 
@@ -130,11 +133,11 @@ export default function CategoriesPage() {
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-ui-fg-base">Categories</h1>
-            <p className="text-ui-fg-muted mt-1 txt-compact-medium">Organize your products ({categories.length})</p>
+            <h1 className="text-2xl font-semibold text-ui-fg-base">{t.categories.title}</h1>
+            <p className="text-ui-fg-muted mt-1 txt-compact-medium">{t.categories.subtitle} ({categories.length})</p>
           </div>
           <button onClick={handleAddNew} className="btn-primary">
-            Add New Category
+            {t.categories.addCategory}
           </button>
         </div>
 
@@ -152,15 +155,15 @@ export default function CategoriesPage() {
                 {category.name}
               </h3>
               <p className="text-sm text-ui-fg-muted mb-4">
-                {category.description || 'No description'}
+                {category.description || t.categories.noDescription}
               </p>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-ui-fg-muted">
-                  Slug: {category.slug}
+                  {t.categories.slug}: {category.slug}
                 </span>
                 <div className="space-x-2">
-                  <button onClick={() => handleEdit(category)} className="btn-ghost txt-compact-small">Edit</button>
-                  <button onClick={() => handleDelete(category.id)} className="btn-ghost txt-compact-small text-red-600">Delete</button>
+                  <button onClick={() => handleEdit(category)} className="btn-ghost txt-compact-small">{t.common.edit}</button>
+                  <button onClick={() => handleDelete(category.id)} className="btn-ghost txt-compact-small text-red-600">{t.common.delete}</button>
                 </div>
               </div>
             </div>
@@ -169,7 +172,7 @@ export default function CategoriesPage() {
 
         {categories.length === 0 && (
           <div className="card p-8 text-center text-ui-fg-muted">
-            No categories found
+            {t.categories.noCategories}
           </div>
         )}
 
@@ -178,11 +181,11 @@ export default function CategoriesPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">
-                {editingCategory ? 'Edit Category' : 'Add New Category'}
+                {editingCategory ? t.categories.editCategory : t.categories.addCategory}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name *</label>
+                  <label className="block text-sm font-medium mb-1">{t.categories.name} *</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -192,7 +195,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Slug *</label>
+                  <label className="block text-sm font-medium mb-1">{t.categories.slug} *</label>
                   <input
                     type="text"
                     value={formData.slug}
@@ -202,7 +205,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">{t.categories.description}</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -211,7 +214,7 @@ export default function CategoriesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Image URL</label>
+                  <label className="block text-sm font-medium mb-1">{t.categories.imageUrl}</label>
                   <input
                     type="url"
                     value={formData.image_url}
@@ -225,10 +228,10 @@ export default function CategoriesPage() {
                     onClick={() => setShowModal(false)}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                   <button type="submit" className="btn-primary">
-                    {editingCategory ? 'Update' : 'Create'}
+                    {editingCategory ? t.common.update : t.common.create}
                   </button>
                 </div>
               </form>

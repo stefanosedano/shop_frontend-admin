@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function ApiKeysPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [apiKeys, setApiKeys] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -50,11 +52,11 @@ export default function ApiKeysPage() {
       <div className="p-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold text-ui-fg-base">API Keys</h1>
-            <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage API keys and access tokens</p>
+            <h1 className="text-2xl font-semibold text-ui-fg-base">{t.apiKeys.title}</h1>
+            <p className="text-ui-fg-muted mt-1 txt-compact-medium">{t.apiKeys.subtitle}</p>
           </div>
           <button className="btn-primary">
-            Create API Key
+            {t.apiKeys.addKey}
           </button>
         </div>
 
@@ -63,9 +65,9 @@ export default function ApiKeysPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Key</th>
-                  <th>Created</th>
+                  <th>{t.apiKeys.name}</th>
+                  <th>{t.apiKeys.key}</th>
+                  <th>{t.apiKeys.created}</th>
                   <th>Last Used</th>
                   <th>Actions</th>
                 </tr>

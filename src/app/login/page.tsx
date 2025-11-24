@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { useLanguage } from '../../context/LanguageContext'
 
 // Use admin API for authentication
 const AUTH_API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
 
 export default function AdminLogin() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [email, setEmail] = useState('admin@shop.com')
   const [password, setPassword] = useState('admin123')
   const [error, setError] = useState('')

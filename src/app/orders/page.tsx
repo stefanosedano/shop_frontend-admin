@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
@@ -13,8 +14,12 @@ type SortDirection = 'asc' | 'desc' | null
 
 export default function OrdersPage() {
   const router = useRouter()
+  const { t, language } = useLanguage()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const [sortField, setSortField] = useState<SortField | null>(null)
   const [sortDirection, setSortDirection] = useState<SortDirection>(null)
   const [filters, setFilters] = useState({
@@ -31,26 +36,133 @@ export default function OrdersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const checkAuthAndLoadOrders = async () => {
+  // Debounced filter effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setPage(1)
+      setOrders([])
+      checkAuthAndLoadOrders(true)
+    }, 500)
+
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, sortField, sortDirection])
+
+  const buildQueryString = () => {
+    const params = new URLSearchParams()
+    
+    if (filters.id) params.append('id', filters.id)
+    if (filters.date) params.append('date', filters.date)
+    if (filters.customer) params.append('customer', filters.customer)
+    if (filters.status) params.append('status', filters.status)
+    if (filters.payment_status) params.append('payment_status', filters.payment_status)
+    if (filters.total) params.append('total', filters.total)
+    if (sortField) {
+      params.append('sort', sortField)
+      if (sortDirection) params.append('order', sortDirection)
+    }
+    
+    return params.toString()
+  }
+
+  const checkAuthAndLoadOrders = async (resetPage = false) => {
     const token = localStorage.getItem('admin_token')
     if (!token) {
       router.push('/login')
       return
     }
 
+    if (resetPage) {
+      setLoading(true)
+    }
+
     try {
-      const response = await axios.get(`${API_URL}/admin/orders/`, {
+      const currentPage = resetPage ? 1 : page
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/orders/${queryString ? '?' + queryString : ''}`
+      
+      const response = await axios.get(url, {
         headers: { Authorization: `Bearer ${token}` }
       })
-      setOrders(response.data)
+      const data = Array.isArray(response.data) ? response.data : response.data.orders || response.data.data || []
+      
+      if (resetPage) {
+        setOrders(data)
+        setPage(1)
+      } else {
+        setOrders(data)
+      }
+      setHasMore(data.length >= 50)
     } catch (error) {
       console.error('Error loading orders:', error)
-      localStorage.removeItem('admin_token')
-      router.push('/login')
+      if (error?.response?.status === 401) {
+        localStorage.removeItem('admin_token')
+        router.push('/login')
+      }
     } finally {
       setLoading(false)
     }
   }
+
+  const loadMoreOrders = useCallback(async () => {
+    if (loadingMore || !hasMore) return
+
+    const token = localStorage.getItem('admin_token')
+    if (!token) return
+
+    setLoadingMore(true)
+    try {
+      const nextPage = page + 1
+      const queryString = buildQueryString()
+      const url = `${API_URL}/admin/orders/${queryString ? '?' + queryString + '&' : '?'}page=${nextPage}`
+      
+      const response = await axios.get(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = Array.isArray(response.data) ? response.data : response.data.orders || response.data.data || []
+      
+      if (data.length > 0) {
+        setOrders(prev => {
+          // Deduplicate by ID
+          const existingIds = new Set(prev.map(o => o.id))
+          const newOrders = data.filter(o => !existingIds.has(o.id))
+          return [...prev, ...newOrders]
+        })
+        setPage(nextPage)
+        setHasMore(data.length >= 50)
+      } else {
+        setHasMore(false)
+      }
+    } catch (error) {
+      console.error('Error loading more orders:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [loadingMore, hasMore, page, filters, sortField, sortDirection])
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (loading || loadingMore || !hasMore) return
+
+      // Find the scrollable main element
+      const mainElement = document.querySelector('main')
+      if (!mainElement) return
+
+      const scrollPosition = mainElement.scrollTop + mainElement.clientHeight
+      const scrollHeight = mainElement.scrollHeight
+      
+      // Load more when within 300px of the bottom
+      if (scrollPosition >= scrollHeight - 300) {
+        loadMoreOrders()
+      }
+    }
+
+    const mainElement = document.querySelector('main')
+    if (mainElement) {
+      mainElement.addEventListener('scroll', handleScroll)
+      return () => mainElement.removeEventListener('scroll', handleScroll)
+    }
+  }, [loading, loadingMore, hasMore, loadMoreOrders])
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
@@ -82,83 +194,13 @@ export default function OrdersPage() {
     setFilters(prev => ({ ...prev, [column]: value }))
   }
 
-  const filteredAndSortedOrders = useMemo(() => {
-    let filtered = [...orders]
-
-    // Apply filters
-    if (filters.id) {
-      filtered = filtered.filter(order => 
-        order.id.toString().includes(filters.id)
-      )
-    }
-    if (filters.date) {
-      filtered = filtered.filter(order => 
-        new Date(order.created_at).toLocaleDateString().toLowerCase().includes(filters.date.toLowerCase())
-      )
-    }
-    if (filters.customer) {
-      filtered = filtered.filter(order => 
-        (order.user?.email || 'Guest').toLowerCase().includes(filters.customer.toLowerCase())
-      )
-    }
-    if (filters.status) {
-      filtered = filtered.filter(order => 
-        order.status.toLowerCase().includes(filters.status.toLowerCase())
-      )
-    }
-    if (filters.payment_status) {
-      filtered = filtered.filter(order => 
-        (order.payment_status || 'paid').toLowerCase().includes(filters.payment_status.toLowerCase())
-      )
-    }
-    if (filters.total) {
-      filtered = filtered.filter(order => 
-        order.total_amount?.toString().includes(filters.total)
-      )
-    }
-
-    // Apply sorting
-    if (sortField && sortDirection) {
-      filtered.sort((a, b) => {
-        let aVal, bVal
-
-        switch (sortField) {
-          case 'id':
-            aVal = a.id
-            bVal = b.id
-            break
-          case 'created_at':
-            aVal = new Date(a.created_at).getTime()
-            bVal = new Date(b.created_at).getTime()
-            break
-          case 'customer':
-            aVal = (a.user?.email || 'Guest').toLowerCase()
-            bVal = (b.user?.email || 'Guest').toLowerCase()
-            break
-          case 'status':
-            aVal = a.status.toLowerCase()
-            bVal = b.status.toLowerCase()
-            break
-          case 'payment_status':
-            aVal = (a.payment_status || 'paid').toLowerCase()
-            bVal = (b.payment_status || 'paid').toLowerCase()
-            break
-          case 'total_amount':
-            aVal = a.total_amount || 0
-            bVal = b.total_amount || 0
-            break
-          default:
-            return 0
-        }
-
-        if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1
-        if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1
-        return 0
-      })
-    }
-
-    return filtered
-  }, [orders, filters, sortField, sortDirection])
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const day = date.getDate()
+    const month = date.toLocaleDateString('en-US', { month: 'short' })
+    const year = date.getFullYear()
+    return `${day} ${month} ${year}`
+  }
 
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) {
@@ -207,12 +249,14 @@ export default function OrdersPage() {
                   <tr>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Order</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.orderId}</span>
                         <button onClick={() => handleSort('id')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="id" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-id"
+                        name="filter-order-id"
                         type="text"
                         placeholder="Filter..."
                         value={filters.id}
@@ -222,14 +266,16 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Date</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.date}</span>
                         <button onClick={() => handleSort('created_at')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="created_at" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-date"
+                        name="filter-order-date"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder="Dec, 2025, 15..."
                         value={filters.date}
                         onChange={(e) => handleFilterChange('date', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -237,12 +283,14 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Customer</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.customer}</span>
                         <button onClick={() => handleSort('customer')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="customer" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-customer"
+                        name="filter-order-customer"
                         type="text"
                         placeholder="Filter..."
                         value={filters.customer}
@@ -252,12 +300,14 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Fulfillment</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.status}</span>
                         <button onClick={() => handleSort('status')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="status" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-status"
+                        name="filter-order-status"
                         type="text"
                         placeholder="Filter..."
                         value={filters.status}
@@ -267,12 +317,14 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Payment status</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.paymentStatus}</span>
                         <button onClick={() => handleSort('payment_status')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="payment_status" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-payment-status"
+                        name="filter-order-payment-status"
                         type="text"
                         placeholder="Filter..."
                         value={filters.payment_status}
@@ -282,14 +334,16 @@ export default function OrdersPage() {
                     </th>
                     <th className="px-6 py-3">
                       <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-medium text-gray-500 tracking-wide">Total</span>
+                        <span className="text-xs font-medium text-gray-500 tracking-wide">{t.orders.total}</span>
                         <button onClick={() => handleSort('total_amount')} className="hover:bg-gray-200 rounded p-1">
                           <SortIcon field="total_amount" />
                         </button>
                       </div>
                       <input
+                        id="filter-order-total"
+                        name="filter-order-total"
                         type="text"
-                        placeholder="Filter..."
+                        placeholder=">520, <850, =30..."
                         value={filters.total}
                         onChange={(e) => handleFilterChange('total', e.target.value)}
                         className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -298,13 +352,13 @@ export default function OrdersPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredAndSortedOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
+                  {orders.map((order, index) => (
+                    <tr key={`order-${order.id}-${index}`} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">#{order.id}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{new Date(order.created_at).toLocaleDateString()}</div>
+                        <div className="text-sm text-gray-500">{formatDate(order.created_at)}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">{order.user?.email || 'Guest'}</div>
@@ -326,6 +380,17 @@ export default function OrdersPage() {
                   ))}
                 </tbody>
               </table>
+              {loadingMore && (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                  <span className="ml-2 text-sm text-gray-500">{t.messages.loadingMore}</span>
+                </div>
+              )}
+              {!hasMore && orders.length > 0 && (
+                <div className="flex items-center justify-center py-4 text-sm text-gray-500">
+                  {t.orders.allOrders}
+                </div>
+              )}
             </div>
           </div>
         )}

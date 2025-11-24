@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 export default function SalesChannelsPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [channels, setChannels] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -89,7 +91,7 @@ export default function SalesChannelsPage() {
             <p className="text-ui-fg-muted mt-1 txt-compact-medium">Manage where your products are sold</p>
           </div>
           <button onClick={handleCreate} className="btn-primary">
-            Create Channel
+            {t.salesChannels.addChannel}
           </button>
         </div>
 

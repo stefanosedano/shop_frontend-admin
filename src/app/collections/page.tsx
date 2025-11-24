@@ -4,11 +4,13 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import AdminLayout from '../../components/AdminLayout'
+import { useLanguage } from '../../context/LanguageContext'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
 
 export default function CollectionsPage() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [collections, setCollections] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
@@ -127,9 +129,9 @@ export default function CollectionsPage() {
     <AdminLayout>
       <div className="p-6">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-lg font-medium text-gray-900">Collections</h1>
+          <h1 className="text-lg font-medium text-gray-900">{t.collections.title}</h1>
           <button onClick={handleCreate} className="btn-primary">
-            + Add Collection
+            + {t.collections.addCollection}
           </button>
         </div>
 
@@ -138,10 +140,10 @@ export default function CollectionsPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Products</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>{t.collections.name}</th>
+                  <th>{t.collections.products}</th>
+                  <th>{t.collections.status}</th>
+                  <th>{t.common.actions}</th>
                 </tr>
               </thead>
               <tbody>
@@ -154,8 +156,8 @@ export default function CollectionsPage() {
                     </td>
                     <td>
                       <div className="flex gap-2">
-                        <button onClick={() => handleEdit(collection)} className="btn-ghost txt-compact-small">Edit</button>
-                        <button onClick={() => handleDelete(collection.id)} className="btn-ghost txt-compact-small text-red-600">Delete</button>
+                        <button onClick={() => handleEdit(collection)} className="btn-ghost txt-compact-small">{t.common.edit}</button>
+                        <button onClick={() => handleDelete(collection.id)} className="btn-ghost txt-compact-small text-red-600">{t.common.delete}</button>
                       </div>
                     </td>
                   </tr>
@@ -170,11 +172,11 @@ export default function CollectionsPage() {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
             <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
               <h3 className="text-lg font-semibold mb-4">
-                {editingCollection ? 'Edit Collection' : 'Create Collection'}
+                {editingCollection ? t.collections.editCollection : t.collections.createCollection}
               </h3>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Name *</label>
+                  <label className="block text-sm font-medium mb-1">{t.collections.name} *</label>
                   <input
                     type="text"
                     value={formData.name}
@@ -184,7 +186,7 @@ export default function CollectionsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Description</label>
+                  <label className="block text-sm font-medium mb-1">{t.collections.description}</label>
                   <textarea
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -193,14 +195,14 @@ export default function CollectionsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Status</label>
+                  <label className="block text-sm font-medium mb-1">{t.collections.status}</label>
                   <select
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     className="input w-full"
                   >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
+                    <option value="active">{t.common.active}</option>
+                    <option value="inactive">{t.common.inactive}</option>
                   </select>
                 </div>
                 <div className="flex gap-2 justify-end">
@@ -209,10 +211,10 @@ export default function CollectionsPage() {
                     onClick={() => setShowModal(false)}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                   <button type="submit" className="btn-primary">
-                    {editingCollection ? 'Update' : 'Create'}
+                    {editingCollection ? t.common.update : t.common.create}
                   </button>
                 </div>
               </form>

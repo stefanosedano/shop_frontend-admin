@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import Link from 'next/link'
 import AdminLayout from '../components/AdminLayout'
+import { useLanguage } from '../context/LanguageContext'
 import { DollarSign, ShoppingCart, Package, Users, TrendingUp, TrendingDown, Calendar, ChevronDown } from 'lucide-react'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8001/api/v1'
@@ -13,6 +14,7 @@ type DateFilter = 'year' | 'month' | 'week' | 'custom'
 
 export default function AdminDashboard() {
   const router = useRouter()
+  const { t } = useLanguage()
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -188,8 +190,8 @@ export default function AdminDashboard() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-ui-fg-base">Dashboard</h1>
-              <p className="text-ui-fg-muted mt-1 txt-compact-medium">Overview of your store&apos;s performance</p>
+              <h1 className="text-2xl font-semibold text-ui-fg-base">{t.dashboard.title}</h1>
+              <p className="text-ui-fg-muted mt-1 txt-compact-medium">{t.dashboard.subtitle}</p>
             </div>
             
             {/* Date Filter Dropdown */}
@@ -220,7 +222,7 @@ export default function AdminDashboard() {
                             : 'hover:bg-ui-bg-hover text-ui-fg-base'
                         }`}
                       >
-                        This Week
+                        {t.dashboard.thisWeek}
                       </button>
                       <button
                         onClick={() => {
@@ -233,7 +235,7 @@ export default function AdminDashboard() {
                             : 'hover:bg-ui-bg-hover text-ui-fg-base'
                         }`}
                       >
-                        This Month
+                        {t.dashboard.thisMonth}
                       </button>
                       <button
                         onClick={() => {
@@ -246,22 +248,24 @@ export default function AdminDashboard() {
                             : 'hover:bg-ui-bg-hover text-ui-fg-base'
                         }`}
                       >
-                        This Year
+                        {t.dashboard.thisYear}
                       </button>
                     </div>
 
                     {/* Custom Date Range */}
                     <div className="border-t border-ui-border-base pt-4">
                       <label className="block txt-compact-small-plus text-ui-fg-base mb-3">
-                        Custom Date Range
+                        {t.dashboard.customRange}
                       </label>
                       <div className="space-y-3">
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <label className="block txt-compact-small text-ui-fg-muted mb-1">
-                              From
+                              {t.dashboard.from}
                             </label>
                             <input
+                              id="custom-date-from"
+                              name="custom-date-from"
                               type="date"
                               value={tempStartDate}
                               onChange={(e) => {
@@ -275,9 +279,11 @@ export default function AdminDashboard() {
                           </div>
                           <div>
                             <label className="block txt-compact-small text-ui-fg-muted mb-1">
-                              To
+                              {t.dashboard.to}
                             </label>
                             <input
+                              id="custom-date-to"
+                              name="custom-date-to"
                               type="date"
                               value={tempEndDate}
                               min={tempStartDate}
@@ -292,14 +298,14 @@ export default function AdminDashboard() {
                             onClick={handleCancelCustomDates}
                             className="btn-secondary flex-1"
                           >
-                            Cancel
+                            {t.dashboard.cancel}
                           </button>
                           <button
                             onClick={handleApplyCustomDates}
                             disabled={!tempStartDate || !tempEndDate}
                             className="btn-primary flex-1"
                           >
-                            Apply Range
+                            {t.dashboard.applyRange}
                           </button>
                         </div>
                       </div>
@@ -314,29 +320,29 @@ export default function AdminDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <StatCard
-          title="Revenue"
+          title={t.dashboard.revenue}
           value={`$${stats.overview.total_revenue.toFixed(2)}`}
-          subtitle={`$${stats.today.revenue.toFixed(2)} today`}
+          subtitle={`$${stats.today.revenue.toFixed(2)} ${t.dashboard.today}`}
           trend="+12.5%"
           icon={<DollarSign className="w-5 h-5" />}
         />
         <StatCard
-          title="Orders"
+          title={t.dashboard.orders}
           value={stats.overview.total_orders}
-          subtitle={`${stats.today.orders} today`}
+          subtitle={`${stats.today.orders} ${t.dashboard.today}`}
           trend="+8.2%"
           icon={<ShoppingCart className="w-5 h-5" />}
         />
         <StatCard
-          title="Products"
+          title={t.dashboard.products}
           value={stats.overview.total_products}
-          subtitle="Active products"
+          subtitle={t.dashboard.activeProducts}
           icon={<Package className="w-5 h-5" />}
         />
         <StatCard
-          title="Customers"
+          title={t.dashboard.customers}
           value={stats.overview.total_users}
-          subtitle="Registered users"
+          subtitle={t.dashboard.registeredUsers}
           trend="+5.4%"
           icon={<Users className="w-5 h-5" />}
         />
@@ -345,30 +351,30 @@ export default function AdminDashboard() {
       {/* Today & This Month Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         <div className="card">
-          <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">Today&apos;s Performance</h2>
+          <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">{t.dashboard.todayPerformance}</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-ui-fg-muted txt-compact-medium">Orders</span>
+              <span className="text-ui-fg-muted txt-compact-medium">{t.dashboard.orders}</span>
               <span className="text-2xl font-semibold text-ui-fg-base">{stats.today.orders}</span>
             </div>
             <div className="h-px bg-ui-border-base"></div>
             <div className="flex justify-between items-center">
-              <span className="text-ui-fg-muted txt-compact-medium">Revenue</span>
+              <span className="text-ui-fg-muted txt-compact-medium">{t.dashboard.revenue}</span>
               <span className="text-2xl font-semibold text-ui-fg-interactive">${stats.today.revenue.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">This Month</h2>
+          <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">{t.dashboard.thisMonth}</h2>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-ui-fg-muted txt-compact-medium">Orders</span>
+              <span className="text-ui-fg-muted txt-compact-medium">{t.dashboard.orders}</span>
               <span className="text-2xl font-semibold text-ui-fg-base">{stats.this_month.orders}</span>
             </div>
             <div className="h-px bg-ui-border-base"></div>
             <div className="flex justify-between items-center">
-              <span className="text-ui-fg-muted txt-compact-medium">Revenue</span>
+              <span className="text-ui-fg-muted txt-compact-medium">{t.dashboard.revenue}</span>
               <span className="text-2xl font-semibold text-ui-fg-interactive">${stats.this_month.revenue.toFixed(2)}</span>
             </div>
           </div>
@@ -377,26 +383,26 @@ export default function AdminDashboard() {
 
       {/* Order Status */}
       <div className="card mb-6">
-        <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">Order Status Overview</h2>
+        <h2 className="txt-compact-medium-plus text-ui-fg-base mb-4">{t.dashboard.orderStatusOverview}</h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
           <StatusBadge
-            status="Pending"
+            status={t.dashboard.pending}
             count={stats.order_status.pending}
           />
           <StatusBadge
-            status="Processing"
+            status={t.dashboard.processing}
             count={stats.order_status.processing}
           />
           <StatusBadge
-            status="Shipped"
+            status={t.dashboard.shipped}
             count={stats.order_status.shipped}
           />
           <StatusBadge
-            status="Delivered"
+            status={t.dashboard.delivered}
             count={stats.order_status.delivered}
           />
           <StatusBadge
-            status="Cancelled"
+            status={t.dashboard.cancelled}
             count={stats.order_status.cancelled}
           />
         </div>
@@ -405,12 +411,12 @@ export default function AdminDashboard() {
       {/* Recent Orders */}
       <div className="card mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="txt-compact-medium-plus text-ui-fg-base">Recent Orders</h2>
+          <h2 className="txt-compact-medium-plus text-ui-fg-base">{t.dashboard.recentOrders}</h2>
           <Link
             href="/orders"
             className="txt-compact-small-plus text-ui-fg-interactive hover:text-ui-fg-interactive-hover transition-fg"
           >
-            View all →
+            {t.dashboard.viewAll} →
           </Link>
         </div>
         <div className="overflow-x-auto">
