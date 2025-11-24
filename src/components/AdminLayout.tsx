@@ -90,6 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="h-px bg-ui-border-base my-2"></div>
           <NavLink href="/users" icon={<Users className="w-4 h-4" />} label={t.nav.customers} active={pathname.startsWith('/users')} collapsed={!sidebarOpen} />
           <NavLink href="/customer-groups" icon={<UsersRound className="w-4 h-4" />} label={t.nav.customerGroups} active={pathname.startsWith('/customer-groups')} collapsed={!sidebarOpen} />
+          <NavLink href="/admin-users" icon={<User className="w-4 h-4 text-purple-600" />} label={t.nav.adminUsers} active={pathname.startsWith('/admin-users')} collapsed={!sidebarOpen} />
           <div className="h-px bg-ui-border-base my-2"></div>
           <NavLink href="/promotions" icon={<Tag className="w-4 h-4" />} label={t.nav.promotions} active={pathname.startsWith('/promotions')} collapsed={!sidebarOpen} />
           <NavLink href="/gift-cards" icon={<Gift className="w-4 h-4" />} label={t.nav.giftCards} active={pathname.startsWith('/gift-cards')} collapsed={!sidebarOpen} />
