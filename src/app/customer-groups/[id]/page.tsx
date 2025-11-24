@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import AdminLayout from '../../../components/AdminLayout';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 
 interface CustomerGroup {
   id: number;
@@ -54,40 +55,26 @@ export default function ManageGroupPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       // Fetch group details
-      const groupRes = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const groupRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}`);
       if (groupRes.ok) {
         setGroup(await groupRes.json());
       }
 
       // Fetch group members
-      const membersRes = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}/customers`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const membersRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}/customers`);
       if (membersRes.ok) {
         setMembers(await membersRes.json());
       }
 
       // Fetch group pricing
-      const pricingRes = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}/pricing`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const pricingRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}/pricing`);
       if (pricingRes.ok) {
         setPricing(await pricingRes.json());
       }
 
       // Fetch all customers for adding
-      const customersRes = await fetch('http://localhost:8001/api/v1/admin/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const customersRes = await fetchWithAuth(`${API_URL}/admin/users`);
       if (customersRes.ok) {
         setAllCustomers(await customersRes.json());
       }
@@ -103,10 +90,8 @@ export default function ManageGroupPage() {
     if (!selectedCustomer) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}/customers/${selectedCustomer}`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}/customers/${selectedCustomer}`, {
+        method: 'POST'
       });
 
       if (res.ok) {
@@ -125,10 +110,8 @@ export default function ManageGroupPage() {
     if (!confirm('Remove this customer from the group?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}/customers/${customerId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}/customers/${customerId}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {
@@ -148,11 +131,9 @@ export default function ManageGroupPage() {
     }
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${groupId}/pricing`, {
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${groupId}/pricing`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -177,10 +158,8 @@ export default function ManageGroupPage() {
     if (!confirm('Remove this pricing rule?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/pricing/${pricingId}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/pricing/${pricingId}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {

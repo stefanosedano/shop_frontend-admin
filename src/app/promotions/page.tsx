@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import AdminLayout from '@/components/AdminLayout';
 import { useLanguage } from '@/context/LanguageContext';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 
 interface Promotion {
   id: number;
@@ -58,12 +59,8 @@ export default function PromotionsAdminPage() {
       }
 
       const [promotionsRes, statsRes] = await Promise.all([
-        fetch(`http://localhost:8001/api/v1/admin/promotions?${params}`, {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
-        fetch('http://localhost:8001/api/v1/admin/promotions/stats/overview', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        }),
+        fetchWithAuth(`${API_URL}/admin/promotions?${params}`),
+        fetchWithAuth(`${API_URL}/admin/promotions/stats/overview`),
       ]);
 
       if (promotionsRes.ok && statsRes.ok) {
@@ -81,13 +78,8 @@ export default function PromotionsAdminPage() {
 
   const togglePromotionStatus = async (id: number, currentStatus: boolean) => {
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(`http://localhost:8001/api/v1/admin/promotions/${id}`, {
+      const response = await fetchWithAuth(`${API_URL}/admin/promotions/${id}`, {
         method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({ is_active: !currentStatus }),
       });
 
@@ -103,10 +95,8 @@ export default function PromotionsAdminPage() {
     if (!confirm('Are you sure you want to delete this promotion?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const response = await fetch(`http://localhost:8001/api/v1/admin/promotions/${id}`, {
+      const response = await fetchWithAuth(`${API_URL}/admin/promotions/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` },
       });
 
       if (response.ok) {

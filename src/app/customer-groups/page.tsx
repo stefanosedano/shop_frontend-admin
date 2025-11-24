@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import AdminLayout from '../../components/AdminLayout';
+import AdminLayout from '@/components/AdminLayout';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 import { useLanguage } from '../../context/LanguageContext';
 
 interface CustomerGroup {
@@ -51,34 +52,22 @@ export default function CustomerGroupsAdminPage() {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       // Fetch groups
-      const groupsRes = await fetch('http://localhost:8001/api/v1/admin/customer-groups/groups', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const groupsRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups`);
       if (groupsRes.ok) {
         const groupsData = await groupsRes.json();
         setGroups(groupsData);
       }
 
       // Fetch segments
-      const segmentsRes = await fetch('http://localhost:8001/api/v1/admin/customer-groups/segments', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const segmentsRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/segments`);
       if (segmentsRes.ok) {
         const segmentsData = await segmentsRes.json();
         setSegments(segmentsData);
       }
 
       // Fetch stats
-      const statsRes = await fetch('http://localhost:8001/api/v1/admin/customer-groups/stats', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const statsRes = await fetchWithAuth(`${API_URL}/admin/customer-groups/stats`);
       if (statsRes.ok) {
         const statsData = await statsRes.json();
         setStats(statsData);
@@ -95,10 +84,8 @@ export default function CustomerGroupsAdminPage() {
     if (!confirm('Are you sure you want to delete this group?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/groups/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups/${id}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {
@@ -116,10 +103,8 @@ export default function CustomerGroupsAdminPage() {
     if (!confirm('Are you sure you want to delete this segment?')) return;
 
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch(`http://localhost:8001/api/v1/admin/customer-groups/segments/${id}`, {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/segments/${id}`, {
+        method: 'DELETE'
       });
 
       if (res.ok) {
@@ -138,10 +123,8 @@ export default function CustomerGroupsAdminPage() {
 
     setUpdating(true);
     try {
-      const token = localStorage.getItem('admin_token');
-      const res = await fetch('http://localhost:8001/api/v1/admin/customer-groups/segments/update-all', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/segments/update-all`, {
+        method: 'POST'
       });
 
       if (res.ok) {

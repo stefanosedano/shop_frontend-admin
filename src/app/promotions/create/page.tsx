@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 
 export default function CreatePromotionPage() {
   const router = useRouter();
@@ -48,12 +49,8 @@ export default function CreatePromotionPage() {
         category_ids: [],
       };
 
-      const response = await fetch('http://localhost:8001/api/v1/admin/promotions/', {
+      const response = await fetchWithAuth(`${API_URL}/admin/promotions/`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(payload),
       });
 

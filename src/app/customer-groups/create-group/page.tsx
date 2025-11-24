@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 import Link from 'next/link';
 import AdminLayout from '../../../components/AdminLayout';
 
@@ -19,12 +20,6 @@ export default function CreateGroupPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       // Parse metadata JSON
       let metadata = null;
       if (formData.metadata.trim()) {
@@ -37,10 +32,9 @@ export default function CreateGroupPage() {
         }
       }
 
-      const res = await fetch('http://localhost:8001/api/v1/admin/customer-groups/groups', {
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/groups`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

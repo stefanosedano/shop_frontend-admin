@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { API_URL, fetchWithAuth } from '@/lib/api';
 import Link from 'next/link';
 import AdminLayout from '../../../components/AdminLayout';
 
@@ -59,12 +60,6 @@ export default function CreateSegmentPage() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem('admin_token');
-      if (!token) {
-        router.push('/login');
-        return;
-      }
-
       // Build rules object
       const rulesObject: Record<string, any> = {};
       rules.forEach(rule => {
@@ -82,10 +77,9 @@ export default function CreateSegmentPage() {
         return;
       }
 
-      const res = await fetch('http://localhost:8001/api/v1/admin/customer-groups/segments', {
+      const res = await fetchWithAuth(`${API_URL}/admin/customer-groups/segments`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
