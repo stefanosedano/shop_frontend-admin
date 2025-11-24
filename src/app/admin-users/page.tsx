@@ -59,7 +59,7 @@ export default function AdminUsersPage() {
       })
       
       if (!userResponse.data.is_admin || userResponse.data.role !== 'admin') {
-        alert('Only admins can access this page')
+        alert(t.auth.invalidCredentials)
         router.push('/products')
         return
       }
@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
       setUsers(response.data)
     } catch (error) {
       console.error('Error loading users:', error)
-      alert('Failed to load users')
+      alert(t.messages.loadError)
     } finally {
       setLoading(false)
     }
@@ -103,7 +103,7 @@ export default function AdminUsersPage() {
           },
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        alert('User updated successfully!')
+        alert(t.users.updatedSuccess)
       } else {
         // Create new user
         await axios.post(
@@ -111,7 +111,7 @@ export default function AdminUsersPage() {
           formData,
           { headers: { Authorization: `Bearer ${token}` } }
         )
-        alert('User created successfully!')
+        alert(t.messages.saveSuccess)
       }
 
       setShowModal(false)
@@ -120,7 +120,7 @@ export default function AdminUsersPage() {
       await loadUsers(token)
     } catch (error: any) {
       console.error('Error saving user:', error)
-      alert(error.response?.data?.detail || 'Failed to save user')
+      alert(error.response?.data?.detail || t.messages.saveError)
     }
   }
 
@@ -136,20 +136,21 @@ export default function AdminUsersPage() {
   }
 
   const handleDelete = async (userId: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return
+    if (!confirm(t.users.deleteConfirm)) return
 
     const token = localStorage.getItem('admin_token')
     if (!token) return
 
     try {
-      await axios.delete(`${API_URL}/auth/admin-users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const response = await axios.delete(`${API_URL}/auth/admin-users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        validateStatus: (status) => status === 204 || (status >= 200 && status < 300)
       })
-      alert('User deleted successfully!')
+      alert(t.messages.deleteSuccess)
       await loadUsers(token)
     } catch (error: any) {
       console.error('Error deleting user:', error)
-      alert(error.response?.data?.detail || 'Failed to delete user')
+      alert(error.response?.data?.detail || t.messages.deleteError)
     }
   }
 
@@ -163,11 +164,11 @@ export default function AdminUsersPage() {
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       )
-      alert(`User ${currentStatus ? 'deactivated' : 'activated'} successfully!`)
+      alert(currentStatus ? t.users.deactivatedSuccess : t.users.activatedSuccess)
       await loadUsers(token)
     } catch (error: any) {
       console.error('Error toggling user status:', error)
-      alert(error.response?.data?.detail || 'Failed to update user status')
+      alert(error.response?.data?.detail || (currentStatus ? t.users.deactivateError : t.users.activateError))
     }
   }
 
